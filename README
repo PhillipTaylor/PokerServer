@@ -1,0 +1,12 @@
+
+Brand New Poker Server written by Phillip Taylor in C++.
+
+Demonstrates the following:
+	- The ability to write a non-trivial C++ application.
+	- Good Object Orientated design skills
+	- Use of Classes, Enums, Structs, Abstract Base Classes
+	- Use of STL libraries and functions such as std::random_shuffle
+	- Use of C++11 features (range based for-loop, initialiser lists)
+
+Does not demonstrate the following:
+	- Use of any pointers, or new and delete, adhoc memory management.
