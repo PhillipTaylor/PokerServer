@@ -10,23 +10,28 @@
 #include "Card.h"
 #include "Deck.h"
 #include "Hand.h"
+#include "ConsolePlayer.h"
+#include "GameEngine.h"
 
 using namespace std;
+using ConcretePlayers::ConsolePlayer;
 
 void init();
 void card_testing();
 void deck_testing();
 void hand_testing();
 void hand_detection_testing();
+void game_engine_testing();
 
 int main(int argc, char** argv) {
 
 	cout << "Hello World!" << endl;
 
-	card_testing();
-	deck_testing();
-	hand_testing();
-	hand_detection_testing();
+	//card_testing();
+	//deck_testing();
+	//hand_testing();
+	//hand_detection_testing();
+	game_engine_testing();
 
 	return 0;
 }
@@ -325,4 +330,23 @@ void hand_detection_testing() {
 		ht15.AddCard(ht15c);
 
 	cout << "Expect Straight Flush #2 (royal!): " << ht15.GetHandTextualDescription() << endl;
+}
+
+void game_engine_testing() {
+
+	//create some players!!
+	ConsolePlayer player1;
+	ConsolePlayer player2;
+
+	player1.SetTotalBalance(40);
+	player2.SetTotalBalance(40);
+
+	//put into a vector
+	vector<AbstractPlayer*> players;
+	players.push_back(&player1);
+	players.push_back(&player2);
+
+	GameEngine ge(players);
+	ge.PlayGame();
+
 }

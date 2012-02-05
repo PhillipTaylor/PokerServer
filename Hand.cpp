@@ -27,7 +27,7 @@ Hand::Hand() :
 }
 
 void Hand::AddCard(const Card& card) {
-	assert(m_hand.size() < MAX_CARDS_IN_HAND);
+	assert(m_hand.size() <= MAX_CARDS_IN_HAND);
 
 	m_hand.push_back(card);
 	CalculateHandScore();

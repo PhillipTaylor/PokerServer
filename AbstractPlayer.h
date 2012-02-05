@@ -30,10 +30,18 @@ typedef struct GameChoice_ {
 class AbstractPlayer {
 
 	public:
+
+		virtual bool IsPlaying() = 0;
 		virtual string GetName() = 0;
 		virtual Money GetTotalBalance() = 0;
 		virtual void SetTotalBalance(Money new_value) = 0;
 
+		virtual void DealerAnnounce(std::string dealer) = 0;
+		virtual void SmallBlindAnnounce(std::string payer, Money amount) = 0;
+		virtual void BigBlindAnnounce(std::string payer, Money amount) = 0;
+		virtual void OpponentMoneyUpdate(std::string player, Money pot, Money bank) = 0;
+
+		virtual void ChatMessage(std::string sender, std::string message) = 0;
 		virtual void CardDealt(const Hand& hand, const Card& new_card) = 0;
 		virtual GameChoice MakeChoice(Money minimum_bid) = 0;
 

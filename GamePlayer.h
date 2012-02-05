@@ -11,6 +11,7 @@
 
 #include <string>
 #include <iostream>
+#include <assert.h>
 
 #include "Hand.h"
 #include "Card.h"
@@ -24,26 +25,37 @@
 class GamePlayer {
 
 	public:
-		GamePlayer(AbstractPlayer& player_impl);
+		explicit GamePlayer(AbstractPlayer& player_impl);
+		GamePlayer(const GamePlayer& gp);
+		GamePlayer operator=(const GamePlayer& gp);
+
 		const Hand& GetHand() const { return m_hand; }
 
 		void SetPot(Money new_value);
 		const Money& GetPot() const { return m_pot; }
 
+		void DealerAnnounce(std::string dealer);
+		void SmallBlindAnnounce(std::string payer, Money amount);
+		void BigBlindAnnounce(std::string payer, Money amount);
+		void OpponentMoneyUpdate(std::string player, Money pot, Money bank);
+
+		bool IsPlaying() const;
 		std::string GetName() const;
 		Money GetTotalBalance() const;
 		void SetTotalBalance(Money new_value);
 		void CardDealt(const Card& new_card);
+		bool IsAllIn();
 
+		Money PayPot(Money value); //moves money from bank to pot
 		GameChoice MakeChoice(Money minimum_bid);
 
 		std::string ToString() const;
 
 	private:
-		AbstractPlayer& m_player_impl;
+		AbstractPlayer *m_player_impl; //GamePlayer does not own pointer.
 		Hand m_hand;
-		Money m_bank;
 		Money m_pot;
+		bool m_folded;
 
 };
 

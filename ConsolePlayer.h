@@ -18,10 +18,17 @@ class ConsolePlayer: public AbstractPlayer {
 	public:
 		ConsolePlayer();
 
+		bool IsPlaying();
 		std::string GetName();
 		Money GetTotalBalance();
 		void SetTotalBalance(Money new_value);
 
+		void DealerAnnounce(std::string dealer);
+		void SmallBlindAnnounce(std::string payer, Money amount);
+		void BigBlindAnnounce(std::string payer, Money amount);
+		void OpponentMoneyUpdate(std::string player, Money pot, Money bank);
+
+		void ChatMessage(std::string sender, std::string message);
 		void CardDealt(const Hand& hand, const Card& new_card);
 		GameChoice MakeChoice(Money minimum_bid);
 

@@ -25,6 +25,10 @@ ConsolePlayer::ConsolePlayer() {
 
 }
 
+bool ConsolePlayer::IsPlaying() {
+	return true;
+}
+
 std::string ConsolePlayer::GetName() {
 	return m_name;
 }
@@ -34,13 +38,33 @@ Money ConsolePlayer::GetTotalBalance() {
 }
 
 void ConsolePlayer::SetTotalBalance(Money new_value) {
-	cout << "Your balance is now: " << new_value << endl;
+	cout << m_name <<": Your balance is now: " << new_value << endl;
 	m_total_balance = new_value;
 }
 
+void ConsolePlayer::DealerAnnounce(std::string dealer) {
+	cout << m_name << ": The dealer is " << dealer << endl;
+}
+
+void ConsolePlayer::SmallBlindAnnounce(std::string payer, Money amount) {
+	cout << m_name << ": Small blind of " << amount << " paid by " << payer << endl;
+}
+
+void ConsolePlayer::BigBlindAnnounce(std::string payer, Money amount) {
+	cout << m_name << ": Big bling of " << amount << " paid by " << payer << endl;
+}
+
+void ConsolePlayer::OpponentMoneyUpdate(std::string player, Money pot, Money bank) {
+	cout << m_name << ": Balance Update: " << player << " now has " << bank << " in bank and " << pot << " in pot" << endl;
+}
+
+void ConsolePlayer::ChatMessage(std::string sender, std::string message) {
+	cout << m_name << "CHAT: " << sender << ": " << message << endl;
+}
+
 void ConsolePlayer::CardDealt(const Hand& hand, const Card& new_card) {
-	cout << "You've just been dealt: " << new_card << endl;
-	cout << "You now hold: " << hand << endl;
+	cout << m_name << ": You've just been dealt: " << new_card << endl;
+	cout << m_name << ": You now hold: " << hand << endl;
 }
 
 GameChoice ConsolePlayer::MakeChoice(Money minimum_bid) {
