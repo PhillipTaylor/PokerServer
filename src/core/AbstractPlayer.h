@@ -40,6 +40,8 @@ class AbstractPlayer {
 		virtual void SmallBlindAnnounce(std::string payer, Money amount) = 0;
 		virtual void BigBlindAnnounce(std::string payer, Money amount) = 0;
 		virtual void OpponentMoneyUpdate(std::string player, Money pot, Money bank) = 0;
+		virtual void OpponentCardAnnounce(std::string player, const Hand& players_hand) = 0;
+		virtual void WinnerAnnounce(std::string player, Money winnings) = 0;
 
 		virtual void ChatMessage(std::string sender, std::string message) = 0;
 		virtual void CardDealt(const Hand& hand, const Card& new_card) = 0;

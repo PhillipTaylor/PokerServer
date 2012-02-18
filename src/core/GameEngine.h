@@ -13,6 +13,7 @@
 #include <ostream>
 #include <functional>
 #include <assert.h>
+#include <list>
 #include "Card.h"
 #include "Deck.h"
 #include "Money.h"
@@ -38,7 +39,7 @@ class GameEngine {
 
 		//Beaware of behaviour. If curr_player == 0 and active, returns 0!
 		//You must atleast increment the value once yourself.
-		int NextPlayer(bool loop = false);
+		int NextPlayer(bool increment = true, bool loop = false);
 		Money GetTotalPot();
 
 		void AssignDealer();
@@ -51,7 +52,7 @@ class GameEngine {
 		void DealTableCard(bool burn = true); //for twist and river
 		bool AllPotsEven(); //spin round of betting until all pots even or players are out.
 		int PlayersRemaining(); //last player is winner!
-		//void CompareHands();
+		void CompareHands();
 
 		//Settle Game scores remaining players hands, assigns winnings and tells
 		//everyone who won.

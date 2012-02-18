@@ -7,14 +7,15 @@
 
 #include <iostream>
 #include <ctime>
+#include <exception>
 #include "Card.h"
 #include "Deck.h"
 #include "Hand.h"
-#include "ConsolePlayer.h"
+#include "../comms/RandomBotPlayer.h"
 #include "GameEngine.h"
 
 using namespace std;
-using ConcretePlayers::ConsolePlayer;
+using ConcretePlayers::RandomBotPlayer;
 
 void init();
 void card_testing();
@@ -27,12 +28,20 @@ int main(int argc, char** argv) {
 
 	cout << "Hello World!" << endl;
 
+	init();
 	//card_testing();
 	//deck_testing();
 	//hand_testing();
 	//hand_detection_testing();
-	game_engine_testing();
+	try {
+		game_engine_testing();
+	} catch (exception& err) {
+		cout << "ERR: " << err.what() << endl;
+	} catch (...) {
+		cout << "Exception was catchable" << endl;
+	}
 
+	cout << "Game Engine Returned" << endl;
 	return 0;
 }
 
@@ -334,17 +343,14 @@ void hand_detection_testing() {
 
 void game_engine_testing() {
 
-	//create some players!!
-	ConsolePlayer player1;
-	ConsolePlayer player2;
-
-	player1.SetTotalBalance(40);
-	player2.SetTotalBalance(40);
-
 	//put into a vector
+	RandomBotPlayer rbp_allocs[10]; //actually have on the stack.
 	vector<AbstractPlayer*> players;
-	players.push_back(&player1);
-	players.push_back(&player2);
+
+	for (int i = 0; i < 10; i++) {
+		rbp_allocs[i].SetTotalBalance(40);
+		players.push_back(&rbp_allocs[i]);
+	}
 
 	GameEngine ge(players);
 	ge.PlayGame();

@@ -10,14 +10,16 @@
 #include <iostream>
 #include <string>
 
-#include "Card.h"
-#include "Hand.h"
+#include "../core/Card.h"
+#include "../core/Hand.h"
 
 using namespace::std;
 
 namespace ConcretePlayers {
 
-ConsolePlayer::ConsolePlayer() {
+ConsolePlayer::ConsolePlayer() :
+	m_total_balance(0)
+{
 
 	//Ask the user for their name!
 	cout << "Enter your name player: ";
@@ -58,6 +60,14 @@ void ConsolePlayer::OpponentMoneyUpdate(std::string player, Money pot, Money ban
 	cout << m_name << ": Balance Update: " << player << " now has " << bank << " in bank and " << pot << " in pot" << endl;
 }
 
+void ConsolePlayer::OpponentCardAnnounce(std::string player, const Hand& players_hand) {
+	cout << m_name << ": " << player << " is holding: " << players_hand.GetHandTextualDescription() << endl;
+}
+
+void ConsolePlayer::WinnerAnnounce(std::string player, Money winnings) {
+	cout << m_name << "Congratulations to " << player << " for winning " << winnings << endl;
+}
+
 void ConsolePlayer::ChatMessage(std::string sender, std::string message) {
 	cout << m_name << "CHAT: " << sender << ": " << message << endl;
 }
@@ -94,11 +104,11 @@ GameChoice ConsolePlayer::MakeChoice(Money minimum_bid) {
 		GameChoice gc;
 		gc.choice = RAISE;
 
-		Money raiseMax = (m_total_balance - minimum_bid);
+		Money raise_max = (m_total_balance - minimum_bid);
 
 		Money raise_val;
 
-		cout << "[" << m_name << "] Raise by: (max=" << raiseMax << ")" << endl;
+		cout << "[" << m_name << "] Raise by: (max=" << raise_max << ")" << endl;
 		cin >> raise_val;
 
 		gc.value = raise_val;

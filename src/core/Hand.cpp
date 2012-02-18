@@ -13,6 +13,9 @@
 
 #include "Hand.h"
 
+#include <iostream>
+using std::cout; using std::endl;
+
 using std::map;
 using std::string;
 using std::pair;
@@ -30,7 +33,9 @@ void Hand::AddCard(const Card& card) {
 	assert(m_hand.size() <= MAX_CARDS_IN_HAND);
 
 	m_hand.push_back(card);
+	cout << "NEW HAND SIZE: " << m_hand.size() << "Added card: " << card << endl;
 	CalculateHandScore();
+	cout << "NEW HAND SIZE AFTER CALC: " << m_hand.size() << endl;
 }
 
 string Hand::GetHandTextualDescription() const {
@@ -423,6 +428,56 @@ const HandValue Hand::GetHighCardScore() const {
 	retval.handFound = true;
 	retval.firstCardValue = card_val;
 	return retval;
+}
+
+bool hand_compare(const Hand& hand1, const Hand& hand2) {
+
+	const HandScore& score1 = hand1.GetBestHandScore();
+	const HandScore& score2 = hand2.GetBestHandScore();
+
+	if (hand1.GetBestHandType() > hand2.GetBestHandType())
+		return true;
+	else if (hand1.GetBestHandType() < hand2.GetBestHandType())
+		return false;
+
+	//same type of hand (both straight or flush or something, compare cards!)
+
+	if (score1.firstCardValue > score2.firstCardValue)
+		return true;
+	else if (score1.firstCardValue < score2.firstCardValue)
+		return false;
+
+/*
+	 * THIS IS INACCURATE TO A _TRUE_ IMPLEMENTATION
+	 * RESOLVE SCORES...
+	 *
+	 * HT_HIGH_CARD    - assume equal
+	HT_PAIR,           - assume equal
+	HT_TWO_PAIR,       - look to second pair
+	HT_STRAIGHT        - assume equal (multi suit straight impossible)
+	HT_THREE_OF_A_KIND - assume equal
+	HT_FLUSH,          - use flush suit
+	HT_FULL_HOUSE,     - look to second pair
+	HT_FOUR_OF_A_KIND, - assume equal (multi suit four of a kind impossible)
+	HT_STRAIGHT_FLUSH  - look to suit
+*/
+
+	if (hand1.GetBestHandType() == HT_TWO_PAIR || hand1.GetBestHandType() == HT_FULL_HOUSE) {
+		if (score1.secondCardValue < score2.secondCardValue)
+			return true;
+		else if (score1.secondCardValue > score2.secondCardValue)
+			return false;
+	}
+
+	if (hand1.GetBestHandType() == HT_FLUSH) {
+		if (score1.suitValue < score2.suitValue)
+			return true;
+		else if (score1.suitValue > score2.suitValue)
+			return false;
+	}
+
+	//BOTH EQUAL!
+	return true;
 }
 
 std::ostream& operator<<(std::ostream& os, const Hand& hand) {

@@ -9,7 +9,7 @@
 #define CONSOLEPLAYER_H_
 
 #include <string>
-#include "AbstractPlayer.h"
+#include "../core/AbstractPlayer.h"
 
 namespace ConcretePlayers {
 
@@ -27,6 +27,8 @@ class ConsolePlayer: public AbstractPlayer {
 		void SmallBlindAnnounce(std::string payer, Money amount);
 		void BigBlindAnnounce(std::string payer, Money amount);
 		void OpponentMoneyUpdate(std::string player, Money pot, Money bank);
+		void OpponentCardAnnounce(std::string player, const Hand& players_hand);
+		void WinnerAnnounce(std::string player, Money winnings);
 
 		void ChatMessage(std::string sender, std::string message);
 		void CardDealt(const Hand& hand, const Card& new_card);

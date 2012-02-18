@@ -11,6 +11,9 @@
 using std::string;
 using std::ostream;
 
+#include <iostream>
+using std::cout; using std::endl;
+
 GamePlayer::GamePlayer(AbstractPlayer& player_impl) :
 	m_player_impl(&player_impl),
 	m_hand(),
@@ -53,6 +56,14 @@ void GamePlayer::OpponentMoneyUpdate(std::string player, Money pot, Money bank) 
 	m_player_impl->OpponentMoneyUpdate(player, pot, bank);
 }
 
+void GamePlayer::OpponentCardAnnounce(std::string player, const Hand& players_hand) {
+	m_player_impl->OpponentCardAnnounce(player, players_hand);
+}
+
+void GamePlayer::WinnerAnnounce(std::string player, Money winnings) {
+	m_player_impl->WinnerAnnounce(player, winnings);
+}
+
 bool GamePlayer::IsPlaying() const {
 	bool concrete_answer = m_player_impl->IsPlaying();
 	return (concrete_answer && !m_folded);
@@ -73,10 +84,15 @@ void GamePlayer::SetTotalBalance(Money new_value) {
 void GamePlayer::CardDealt(const Card& new_card) {
 	m_hand.AddCard(new_card);
 	m_player_impl->CardDealt(m_hand, new_card);
+	cout << "HAND COUNT: " << m_hand.GetCardCount() << endl;
 }
 
 bool GamePlayer::IsAllIn() {
 	return (IsPlaying() && m_player_impl->GetTotalBalance() == 0);
+}
+
+void GamePlayer::Fold() {
+	m_folded = true;
 }
 
 Money GamePlayer::PayPot(Money value) {
@@ -100,8 +116,6 @@ Money GamePlayer::PayPot(Money value) {
 }
 
 GameChoice GamePlayer::MakeChoice(Money minimum_bid) {
-
-	assert(minimum_bid < m_pot);
 
 	GameChoice gc = m_player_impl->MakeChoice(minimum_bid);
 

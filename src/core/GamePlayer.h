@@ -38,6 +38,8 @@ class GamePlayer {
 		void SmallBlindAnnounce(std::string payer, Money amount);
 		void BigBlindAnnounce(std::string payer, Money amount);
 		void OpponentMoneyUpdate(std::string player, Money pot, Money bank);
+		void OpponentCardAnnounce(std::string player, const Hand& players_hand);
+		void WinnerAnnounce(std::string player, Money winnings);
 
 		bool IsPlaying() const;
 		std::string GetName() const;
@@ -45,6 +47,7 @@ class GamePlayer {
 		void SetTotalBalance(Money new_value);
 		void CardDealt(const Card& new_card);
 		bool IsAllIn();
+		void Fold();
 
 		Money PayPot(Money value); //moves money from bank to pot
 		GameChoice MakeChoice(Money minimum_bid);
