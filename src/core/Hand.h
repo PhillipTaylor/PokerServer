@@ -12,6 +12,8 @@
 #include <vector>
 #include "Card.h"
 
+namespace GameEngineCore {
+
 const unsigned int MAX_CARDS_IN_HAND = 7;
 
 //describes the hand.
@@ -76,5 +78,6 @@ class Hand {
 bool hand_compare(const Hand& hand1, const Hand& hand2);
 std::ostream& operator<<(std::ostream& os, const Hand& hand);
 
+}
 
 #endif /* HAND_H_ */

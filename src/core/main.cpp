@@ -15,6 +15,7 @@
 #include "GameEngine.h"
 
 using namespace std;
+using namespace GameEngineCore;
 using ConcretePlayers::RandomBotPlayer;
 
 void init();

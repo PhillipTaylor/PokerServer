@@ -16,6 +16,8 @@
 
 using std::string;
 
+namespace GameEngineCore {
+
 enum Decision {
 	FOLD,
 	CALL,
@@ -50,5 +52,7 @@ class AbstractPlayer {
 		virtual ~AbstractPlayer() {};
 
 };
+
+}
 
 #endif /* ABSTRACTPLAYER_H_ */

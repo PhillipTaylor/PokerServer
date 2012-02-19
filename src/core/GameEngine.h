@@ -20,6 +20,8 @@
 #include "GamePlayer.h"
 #include "AbstractPlayer.h"
 
+namespace GameEngineCore {
+
 const unsigned int NO_NEXT_PLAYER = -1;
 
 class GameEngine {
@@ -61,5 +63,7 @@ class GameEngine {
 };
 
 std::ostream& operator<<(std::ostream& os, const GameEngine& ge);
+
+}
 
 #endif /* GAMEENGINE_H_ */

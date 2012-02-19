@@ -8,9 +8,12 @@
 #ifndef MONEY_H_
 #define MONEY_H_
 
-//Can replace this with more complex type
-//later if need be...
+namespace GameEngineCore {
 
-typedef double Money;
+	//Can replace this with more complex type
+	//later if need be...
+	typedef double Money;
+
+}
 
 #endif /* MONEY_H_ */

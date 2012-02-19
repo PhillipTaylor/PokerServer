@@ -14,6 +14,8 @@ using std::ostream;
 #include <iostream>
 using std::cout; using std::endl;
 
+namespace GameEngineCore {
+
 GamePlayer::GamePlayer(AbstractPlayer& player_impl) :
 	m_player_impl(&player_impl),
 	m_hand(),
@@ -145,4 +147,6 @@ string GamePlayer::ToString() const {
 ostream& operator<<(ostream& os, const GamePlayer& ply) {
 	os << ply.ToString();
 	return os;
+}
+
 }

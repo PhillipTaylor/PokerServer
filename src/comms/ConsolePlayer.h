@@ -10,6 +10,9 @@
 
 #include <string>
 #include "../core/AbstractPlayer.h"
+#include "../core/Money.h"
+
+using namespace GameEngineCore;
 
 namespace ConcretePlayers {
 

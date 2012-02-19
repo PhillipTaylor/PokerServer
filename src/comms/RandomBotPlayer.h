@@ -9,6 +9,9 @@
 #define RANDOMBOTPLAYER_H_
 
 #include "../core/AbstractPlayer.h"
+#include "../core/Money.h"
+
+using namespace GameEngineCore;
 
 namespace ConcretePlayers {
 

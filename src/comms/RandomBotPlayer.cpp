@@ -5,8 +5,8 @@
  *      Author: phill
  */
 
-#include <sstream>
 #include "RandomBotPlayer.h"
+#include "../poker_utils/CommonFunctions.h"
 
 namespace ConcretePlayers {
 
@@ -19,11 +19,8 @@ RandomBotPlayer::RandomBotPlayer() :
 	m_total_balance(0)
 {
 	++bot_index;
+	m_name = "Bot #" + PokerUtils::AutoToString(bot_index);
 
-	stringstream ss;
-	ss << "Bot #" << bot_index;
-
-	m_name = ss.str();
 }
 
 bool RandomBotPlayer::IsPlaying() {

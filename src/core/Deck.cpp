@@ -7,10 +7,12 @@
 
 #include <assert.h>
 #include <algorithm>
-#include <sstream>
 #include "Deck.h"
+#include "../poker_utils/CommonFunctions.h"
 
 using namespace std;
+
+namespace GameEngineCore {
 
 Deck::Deck() :
 	m_deck(),
@@ -61,9 +63,8 @@ string Deck::ToHashString() const {
 }
 
 string Deck::ToString() const {
-	stringstream cardcount;
-	cardcount << GetCount();
-	string retval = "Deck of " + cardcount.str() + " Cards";
+	string cardcount = PokerUtils::AutoToString(GetCount());
+	string retval = "Deck of " + cardcount + " Cards";
 	return retval;
 }
 
@@ -72,3 +73,4 @@ ostream& operator<<(ostream& os, const Deck& dk) {
 	return os;
 }
 
+}

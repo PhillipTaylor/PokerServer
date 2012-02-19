@@ -10,6 +10,8 @@
 
 #include <string>
 
+namespace GameEngineCore {
+
 enum SUIT { //danger. order important.
 	CLUBS = 0,
 	DIAMONDS = 1,
@@ -54,5 +56,7 @@ bool operator==(const Card& c1, const Card& c2);
 
 std::string CardValueToString(const int value, bool expandFaceName = false);
 std::string CardSuitToString(const int suit);
+
+}
 
 #endif /* CARD_H_ */

@@ -22,6 +22,8 @@ using std::ostream;
 using std::random_shuffle;
 using std::for_each;
 
+namespace GameEngineCore {
+
 //to make bool values to NextPlayer more readable
 const bool INCR = true;
 const bool NO_INCR = false;
@@ -407,4 +409,4 @@ ostream& operator<<(ostream& os, const GameEngine& ge) {
 	return os;
 }
 
-
+}

@@ -7,10 +7,12 @@
 
 #include "Card.h"
 
-#include <sstream>
 #include <assert.h>
+#include "../poker_utils/CommonFunctions.h"
 
 using namespace std;
+
+namespace GameEngineCore {
 
 Card::Card(const int value, const int suit) :
 	m_value(value),
@@ -90,15 +92,10 @@ string CardValueToString(const int value, bool expandFaceName) {
 			case (ACE):
 				return "Ace";
 			default:
-				stringstream ss;
-				ss << value;
-				return ss.str();
+				return PokerUtils::AutoToString(value);
 		}
-	} else {
-		stringstream ss;
-		ss << value;
-		return ss.str();
-	}
+	} else
+		return PokerUtils::AutoToString(value);
 
 }
 
@@ -113,4 +110,6 @@ string CardSuitToString(const int suit) {
 		case (HEARTS):
 			return "Hearts";
 	}
+}
+
 }

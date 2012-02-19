@@ -23,6 +23,8 @@ using std::vector;
 using std::runtime_error;
 using std::stringstream;
 
+namespace GameEngineCore {
+
 Hand::Hand() :
 	m_hand()
 {
@@ -485,3 +487,4 @@ std::ostream& operator<<(std::ostream& os, const Hand& hand) {
 	return os;
 }
 
+}

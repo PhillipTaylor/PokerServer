@@ -20,7 +20,7 @@
 
 //Todo. double not great for currency
 //because of rounding.
-
+namespace GameEngineCore {
 
 class GamePlayer {
 
@@ -63,5 +63,7 @@ class GamePlayer {
 };
 
 std::ostream& operator<<(std::ostream& os, const GamePlayer& ply);
+
+}
 
 #endif /* GAMEPLAYER_H_ */
