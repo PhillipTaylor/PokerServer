@@ -10,20 +10,28 @@
 #include <vector>
 #include <stdexcept>
 #include <sstream>
+#include <algorithm>
+#include "../poker_utils/Logger.h"
 
 #include "Hand.h"
+#include "Card.h"
 
-#include <iostream>
-using std::cout; using std::endl;
-
+using namespace PokerUtils::Logger;
 using std::map;
 using std::string;
 using std::pair;
 using std::vector;
 using std::runtime_error;
 using std::stringstream;
+using std::sort;
 
 namespace GameEngineCore {
+
+const HandValue HANDVALUE_NO_HAND = { //This syntax is a C++11 intialiser list on a global const.
+	HT_NO_HAND,
+	nullptr,
+	nullptr
+};
 
 Hand::Hand() :
 	m_hand()
@@ -35,9 +43,37 @@ void Hand::AddCard(const Card& card) {
 	assert(m_hand.size() <= MAX_CARDS_IN_HAND);
 
 	m_hand.push_back(card);
-	cout << "NEW HAND SIZE: " << m_hand.size() << "Added card: " << card << endl;
 	CalculateHandScore();
-	cout << "NEW HAND SIZE AFTER CALC: " << m_hand.size() << endl;
+}
+
+void Hand::CalculateHandScore() {
+
+	typedef const HandValue (Hand::*scoringFunctionPtr)() const;
+
+	//declare an array of scoring functions...
+	scoringFunctionPtr funcs[] = {
+			&Hand::GetStraightFlushValue,
+			&Hand::GetFourOfAKindValue,
+			&Hand::GetFullHouseValue,
+			&Hand::GetFlushValue,
+			&Hand::GetStraightValue,
+			&Hand::GetThreeOfAKindValue,
+			&Hand::GetTwoPairValue,
+			&Hand::GetPairValue,
+			&Hand::GetHighCardValue
+	};
+
+	HandValue hand_score;
+
+	//invoke until one returns.
+	for (int i = 0; i < 9; i++) {
+		hand_score = (this->*(funcs[i]))();
+
+		if (hand_score.type != HT_NO_HAND)
+			break;
+	}
+
+	m_best_hand = hand_score;
 }
 
 string Hand::GetHandTextualDescription() const {
@@ -45,10 +81,14 @@ string Hand::GetHandTextualDescription() const {
 	if (m_hand.size() == 0)
 		return "No Cards in hand";
 
-	string firstCardStr = CardValueToString(m_best_hand_score.firstCardValue, true);
-	string secondCardStr = CardValueToString(m_best_hand_score.secondCardValue, true);
+	string firstCardStr = CardValueToString(m_best_hand.primaryCard->GetValue(), true);
 
-	switch(m_best_hand_type) {
+	string secondCardStr = "";
+
+	if (m_best_hand.secondaryCard != nullptr)
+		secondCardStr = CardValueToString(m_best_hand.secondaryCard->GetValue(), true);
+
+	switch(m_best_hand.type) {
 		case (HT_HIGH_CARD):
 			return "High Card of " + firstCardStr;
 		case (HT_PAIR):
@@ -60,29 +100,53 @@ string Hand::GetHandTextualDescription() const {
 		case (HT_THREE_OF_A_KIND):
 			return "Three of a Kind with " + firstCardStr + "s";
 		case (HT_FLUSH):
-			return "Flush with " + CardSuitToString(m_best_hand_score.suitValue);
+			return "Flush with " + CardSuitToString(m_best_hand.primaryCard->GetSuit());
 		case (HT_FULL_HOUSE):
 			return "Full House, " + firstCardStr + "s full of " + secondCardStr + "s";
 		case (HT_FOUR_OF_A_KIND):
 			return "Four of a Kind with " + firstCardStr + "s";
 		case (HT_STRAIGHT_FLUSH):
-			if (m_best_hand_score.firstCardValue == ACE)
-				return "Royal Flush!!! (" + CardSuitToString(m_best_hand_score.suitValue) + ")";
+			if (m_best_hand.primaryCard->GetValue() == ACE)
+				return "Royal Flush!!! (" + CardSuitToString(m_best_hand.primaryCard->GetSuit()) + ")";
 			else
 				return "Straight Flush of " +
-						CardSuitToString(m_best_hand_score.suitValue) +
+						CardSuitToString(m_best_hand.primaryCard->GetSuit()) +
 						" " + firstCardStr + " high";
 		default:
 			throw new runtime_error("This can't happen."); //to silence gcc "may return void warning"
-			//claus never hit, because with no cards I return early at top of function, with one card
+			//clause never hit, because with no cards I return early at top of function, with one card
 			//I hit the HT_HIGH_CARD case.
 	}
 
 }
 
+const Card* Hand::GetCardPtr(int suit, int value) const {
+	for (const Card& card : m_hand) {
+		if (card.GetSuit() == suit && card.GetValue() == value)
+			return &card;
+	}
+
+	return nullptr;
+}
+
+const Card* Hand::GetCardPtrAnySuit(int value) const {
+	const Card* tmp = GetCardPtr(HEARTS, value);
+	if (tmp == nullptr)
+		tmp = GetCardPtr(SPADES, value);
+	if (tmp == nullptr)
+		tmp = GetCardPtr(CLUBS, value);
+	if (tmp == nullptr)
+		tmp = GetCardPtr(DIAMONDS, value);
+	assert(tmp != nullptr);
+	return tmp;
+}
+
 string Hand::ToString() const {
 	string s;
 	bool first = true;
+
+	s = PokerUtils::AutoToString(m_hand.size());
+	s += " cards: ";
 
 	for (const Card& c : m_hand) {
 
@@ -103,44 +167,8 @@ const Card& Hand::operator[](int position) const {
 	return m_hand[position];
 }
 
-void Hand::CalculateHandScore() {
+const HandValue Hand::GetStraightFlushValue() const {
 
-	assert(m_hand.size() > 0);
-
-	//the m_hand_score object represents a hand score, we simply update it.
-
-	typedef const HandScore (Hand::*ScoringFuncPtr)() const; //All the Get..Score() functions match this signature.
-	typedef pair<HandType, ScoringFuncPtr> HPair;
-
-	vector<HPair > scoringFunctions = {                    //ordered by rank.
-			{ HT_STRAIGHT_FLUSH,  &Hand::GetStraightFlushScore },
-			{ HT_FOUR_OF_A_KIND,  &Hand::GetFourOfAKindScore },
-			{ HT_FULL_HOUSE,      &Hand::GetFullHouseScore },
-			{ HT_FLUSH,           &Hand::GetFlushScore },
-			{ HT_STRAIGHT,        &Hand::GetStraightScore },
-			{ HT_THREE_OF_A_KIND, &Hand::GetThreeOfAKindScore },
-			{ HT_TWO_PAIR,        &Hand::GetTwoPairScore },
-			{ HT_PAIR,            &Hand::GetPairScore },
-			{ HT_HIGH_CARD,       &Hand::GetHighCardScore } //never returns NO_HAND
-	};
-
-	for (const HPair& scorePair: scoringFunctions) {
-
-		HandType this_type = scorePair.first;
-		ScoringFuncPtr this_impl = scorePair.second;
-
-		HandScore hand_result = (this->*this_impl)(); //invoke scoring function!
-
-		if (hand_result.handFound) {
-			m_best_hand_type = this_type;
-			m_best_hand_score = hand_result;
-			return;
-		}
-	}
-
-}
-
-const HandScore Hand::GetStraightFlushScore() const {
 
 	int offset = LOWEST_CARD_VALUE - 1; //leaves space for lowest card to be 1 (low ace)
 
@@ -189,21 +217,23 @@ const HandScore Hand::GetStraightFlushScore() const {
 		seq = 0;
 	}
 
-	HandScore retval;
-
 	if (highestValueSoFar != -1) {
-		retval.handFound = true;
-		retval.firstCardValue = highestValueSoFar + offset;
-		retval.suitValue = highestSuitSoFar;
-	} else {
-		retval.handFound = false;
-	}
 
-	return retval;
+		HandValue retval;
+
+		//retrieve matching primary card and return
+		retval.type = HT_STRAIGHT_FLUSH;
+		retval.primaryCard = GetCardPtr(highestSuitSoFar, highestValueSoFar);
+		retval.secondaryCard = nullptr;
+
+		return retval;
+	} else {
+		return HANDVALUE_NO_HAND;
+	}
 
 }
 
-const HandScore Hand::GetFourOfAKindScore() const {
+const HandValue Hand::GetFourOfAKindValue() const {
 
 	map<int, int> occur;
 
@@ -214,81 +244,105 @@ const HandScore Hand::GetFourOfAKindScore() const {
 		occur[card.GetValue()]++;
 
 	//iterate backwards to get the highest match first.
-	for (map<int, int>::reverse_iterator iter = occur.rbegin(); iter != occur.rend(); ++iter) {
+	for (auto iter = occur.rbegin(); iter != occur.rend(); ++iter) {
 		if (iter->second == 4) {
-			HandScore retval;
-			retval.handFound = true;
-			retval.firstCardValue = iter->first;
+			HandValue retval;
+			retval.type = HT_FOUR_OF_A_KIND;
+			retval.primaryCard = GetCardPtr(CLUBS, iter->first);
+			retval.secondaryCard = nullptr;
 			return retval;
 		}
 	}
 
-	HandScore retval;
-	retval.handFound = false;
-	return retval;
+	return HANDVALUE_NO_HAND;
 }
 
-const HandScore Hand::GetFullHouseScore() const {
+const HandValue Hand::GetFullHouseValue() const {
 
-	map<int, int> occur;
-
-	for (int i = LOWEST_CARD_VALUE; i <= HIGHEST_CARD_VALUE; i++)
-		occur[i] = 0;
+	map<int, int > occurs = {
+		{ DIAMONDS, 0 },
+		{ CLUBS, 0 },
+		{ SPADES, 0 },
+		{ HEARTS, 0 },
+	};
 
 	for (const Card& card : m_hand)
-		occur[card.GetValue()]++;
+		occurs[card.GetValue()]++;
 
 	int threes_value = -1;
 	int twos_value = -1;
 
 	//iterate backwards to get the highest match first.
-	for (map<int, int>::reverse_iterator iter = occur.rbegin(); iter != occur.rend(); ++iter) {
+	for (auto iter = occurs.rbegin(); iter != occurs.rend(); ++iter) {
 		if (iter->second >= 3 && threes_value == -1)
 			threes_value = iter->first;
-		else if (iter->second >= 2 && twos_value == -1)  //bug alert: don't fall from 3 into 2 if you refactor.
+		else if (iter->second >= 2 && twos_value == -1)
 			twos_value = iter->first;
 	}
 
 	if (threes_value != -1 && twos_value != -1) {
-		HandScore retval;
-		retval.handFound = true;
-		retval.firstCardValue = threes_value;
-		retval.secondCardValue = twos_value;
+		HandValue retval;
+		retval.type = HT_FULL_HOUSE;
+
+		//resolve best of primary value. (must be holding one of these two cards.
+		retval.primaryCard = GetCardPtrAnySuit(threes_value);
+		retval.secondaryCard = GetCardPtrAnySuit(twos_value);
+
 		return retval;
-	} else {
-		HandScore retval;
-		retval.handFound = false;
-		return retval;
-	}
+	} else
+		return HANDVALUE_NO_HAND;
 }
 
-const HandScore Hand::GetFlushScore() const {
+const HandValue Hand::GetFlushValue() const {
 
-	map<int, int> occur = {
-		{ HEARTS,   0 },
-		{ SPADES,   0 },
-		{ CLUBS,    0 },
-		{ DIAMONDS, 0 }
+	map<int, vector<const Card*> > occur = {
+		{ DIAMONDS, vector<const Card*>() }, // reverse order of importance
+		{ CLUBS, vector<const Card*>() },
+		{ SPADES, vector<const Card*>() },
+		{ HEARTS, vector<const Card*>() }
 	};
 
-	for (const Card& card : m_hand)
-		occur[card.GetSuit()]++;
-
-	for (pair<int, int> suit_count : occur) {
-		if (suit_count.second >= 5) {
-			HandScore retval;
-			retval.handFound = true;
-			retval.suitValue = suit_count.first;
-			return retval;
-		}
+	for (const Card& card : m_hand) {
+		occur[card.GetSuit()].push_back(&card);
 	}
 
-	HandScore retval;
-	retval.handFound = false;
-	return retval;
+	const Card* match = nullptr;
+
+	for (pair<int, vector<const Card*> > suit_cards : occur) {
+		sort(suit_cards.second.begin(), suit_cards.second.end());
+
+		//Is there an uninterrupted sequence of 5 cards?
+		const Card* prev = nullptr;
+		int count = 0;
+
+		for (const Card* scard : suit_cards.second) {
+			if (prev == nullptr) {
+				prev = scard;
+				count++;
+			} else if (prev->GetValue() + 1 == scard->GetValue()) {
+				count++;
+				if (count == 5)
+					match = scard;
+			} else
+				count = 0;
+
+			prev = scard;
+		}
+
+	}
+
+	if (match != nullptr) {
+		HandValue retval;
+		retval.type = HT_FULL_HOUSE;
+		retval.primaryCard = match;
+		retval.secondaryCard = nullptr;
+		return retval;
+	} else
+		return HANDVALUE_NO_HAND;
+
 }
 
-const HandScore Hand::GetStraightScore() const {
+const HandValue Hand::GetStraightValue() const {
 
 	map<int, int> occur;
 
@@ -307,7 +361,7 @@ const HandScore Hand::GetStraightScore() const {
 	int highestSoFar = -1;
 
 	//look for the longest sequence of 5...
-	for (map<int, int>::iterator iter = occur.begin(); iter != occur.end(); ++iter) {
+	for (auto iter = occur.begin(); iter != occur.end(); ++iter) {
 
 		if (iter->second == 0) {
 			seq = 0;
@@ -319,18 +373,15 @@ const HandScore Hand::GetStraightScore() const {
 	}
 
 	if (highestSoFar != -1) {
-		HandScore retval;
-		retval.handFound = true;
-		retval.firstCardValue = highestSoFar;
+		HandValue retval;
+		retval.type = HT_STRAIGHT;
+		retval.primaryCard = GetCardPtrAnySuit(highestSoFar);
 		return retval;
-	} else {
-		HandScore retval;
-		retval.handFound = false;
-		return retval;
-	}
+	} else
+		return HANDVALUE_NO_HAND;
 }
 
-const HandScore Hand::GetThreeOfAKindScore() const {
+const HandValue Hand::GetThreeOfAKindValue() const {
 
 	map<int, int> occur;
 
@@ -343,19 +394,18 @@ const HandScore Hand::GetThreeOfAKindScore() const {
 	//iterate backwards to get the highest match first.
 	for (map<int, int>::reverse_iterator iter = occur.rbegin(); iter != occur.rend(); ++iter) {
 		if (iter->second == 3) {
-			HandScore retval;
-			retval.handFound = true;
-			retval.firstCardValue = iter->first;
+			HandValue retval;
+			retval.type = HT_THREE_OF_A_KIND;
+			retval.primaryCard = GetCardPtrAnySuit(iter->first);
+			retval.secondaryCard = nullptr;
 			return retval;
 		}
 	}
 
-	HandScore retval;
-	retval.handFound = false;
-	return retval;
+	return HANDVALUE_NO_HAND;
 }
 
-const HandScore Hand::GetTwoPairScore() const {
+const HandValue Hand::GetTwoPairValue() const {
 
 	map<int, int> occur;
 
@@ -365,34 +415,29 @@ const HandScore Hand::GetTwoPairScore() const {
 	for (const Card& card : m_hand)
 		occur[card.GetValue()]++;
 
-	int number_of_pairs = 0;
-	int first_pair_value;
+	int first_pair_value = -1;
 
 	//iterate backwards to get the highest matches first.
-	for (map<int, int>::reverse_iterator iter = occur.rbegin(); iter != occur.rend(); ++iter) {
+	for (auto iter = occur.rbegin(); iter != occur.rend(); ++iter) {
 		if (iter->second == 2) {
 
-			if (number_of_pairs == 0)
+			if (first_pair_value == -1)
 				first_pair_value = iter->first;
-
-			if (number_of_pairs == 1) {
-				HandScore retval;
-				retval.handFound = true;
-				retval.firstCardValue = first_pair_value;
-				retval.secondCardValue = iter->first;
+			else {
+				HandValue retval;
+				retval.type = HT_TWO_PAIR;
+				retval.primaryCard = GetCardPtrAnySuit(first_pair_value);
+				retval.secondaryCard = GetCardPtrAnySuit(iter->first);
 				return retval;
 			}
 
-			number_of_pairs++;
 		}
 	}
 
-	HandScore retval;
-	retval.handFound = false;
-	return retval;
+	return HANDVALUE_NO_HAND;
 }
 
-const HandValue Hand::GetPairScore() const {
+const HandValue Hand::GetPairValue() const {
 
 	map<int, int> occur;
 
@@ -405,49 +450,71 @@ const HandValue Hand::GetPairScore() const {
 	//iterate backwards to get the highest match first.
 	for (map<int, int>::reverse_iterator iter = occur.rbegin(); iter != occur.rend(); ++iter) {
 		if (iter->second == 2) {
-			HandScore retval;
-			retval.handFound = true;
-			retval.firstCardValue = iter->first;
+			HandValue retval;
+			retval.type = HT_PAIR;
+			retval.primaryCard = GetCardPtrAnySuit(iter->first);
 			return retval;
 		}
 	}
 
-	HandScore retval;
-	retval.handFound = false;
-	return retval;
+	return HANDVALUE_NO_HAND;
 }
 
-const HandValue Hand::GetHighCardScore() const {
+//reminder: never return NO_HAND
+const HandValue Hand::GetHighCardValue() const {
 
-	int card_val = LOWEST_CARD_VALUE;
+	const Card* best_card = nullptr;
 
 	for (const Card& card : m_hand) {
-		if (card_val < card.GetValue())
-			card_val = card.GetValue();
+		if (best_card == nullptr)
+			best_card = &card;
+		else if (best_card->GetValue() < card.GetValue())
+			best_card = &card;
 	}
 
-	HandScore retval;
-	retval.handFound = true;
-	retval.firstCardValue = card_val;
+	HandValue retval;
+	retval.type = HT_HIGH_CARD;
+	retval.primaryCard = best_card;
 	return retval;
 }
 
-bool hand_compare(const Hand& hand1, const Hand& hand2) {
+int hand_compare(const Hand* hand1, const Hand* hand2) {
 
-	const HandScore& score1 = hand1.GetBestHandScore();
-	const HandScore& score2 = hand2.GetBestHandScore();
+	const HandValue& score1 = hand1->GetBestHandValue();
+	const HandValue& score2 = hand2->GetBestHandValue();
 
-	if (hand1.GetBestHandType() > hand2.GetBestHandType())
-		return true;
-	else if (hand1.GetBestHandType() < hand2.GetBestHandType())
-		return false;
+	if (score1.type > score2.type)
+		return -1;
+	else if (score1.type < score2.type)
+		return 1;
 
 	//same type of hand (both straight or flush or something, compare cards!)
+	if (score1.primaryCard->GetValue() > score2.primaryCard->GetValue())
+		return -1;
+	else if (score1.primaryCard->GetValue() < score2.primaryCard->GetValue())
+		return 1;
 
-	if (score1.firstCardValue > score2.firstCardValue)
-		return true;
-	else if (score1.firstCardValue < score2.firstCardValue)
-		return false;
+	if (score1.type == HT_FULL_HOUSE || score1.type == HT_TWO_PAIR) {
+		if (score1.secondaryCard->GetValue() > score2.secondaryCard->GetValue())
+			return -1;
+		else if (score1.secondaryCard->GetValue() < score2.secondaryCard->GetValue())
+			return 1;
+	}
+
+	if (score1.primaryCard->GetSuit() > score2.primaryCard->GetSuit())
+		return -1;
+	else if (score1.primaryCard->GetSuit() < score2.primaryCard->GetSuit())
+		return -1;
+
+	if (score1.type == HT_FULL_HOUSE || score1.type == HT_TWO_PAIR) {
+		if (score1.secondaryCard->GetSuit() > score2.secondaryCard->GetSuit())
+			return -1;
+		else if (score1.secondaryCard->GetSuit() < score2.secondaryCard->GetSuit())
+			return 1;
+	}
+
+	return 0; //exact same hand value
+}
 
 /*
 	 * THIS IS INACCURATE TO A _TRUE_ IMPLEMENTATION
@@ -463,24 +530,6 @@ bool hand_compare(const Hand& hand1, const Hand& hand2) {
 	HT_FOUR_OF_A_KIND, - assume equal (multi suit four of a kind impossible)
 	HT_STRAIGHT_FLUSH  - look to suit
 */
-
-	if (hand1.GetBestHandType() == HT_TWO_PAIR || hand1.GetBestHandType() == HT_FULL_HOUSE) {
-		if (score1.secondCardValue < score2.secondCardValue)
-			return true;
-		else if (score1.secondCardValue > score2.secondCardValue)
-			return false;
-	}
-
-	if (hand1.GetBestHandType() == HT_FLUSH) {
-		if (score1.suitValue < score2.suitValue)
-			return true;
-		else if (score1.suitValue > score2.suitValue)
-			return false;
-	}
-
-	//BOTH EQUAL!
-	return true;
-}
 
 std::ostream& operator<<(std::ostream& os, const Hand& hand) {
 	os << hand.ToString();

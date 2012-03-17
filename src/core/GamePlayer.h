@@ -29,7 +29,7 @@ class GamePlayer {
 		GamePlayer(const GamePlayer& gp);
 		GamePlayer operator=(const GamePlayer& gp);
 
-		const Hand& GetHand() const { return m_hand; }
+		const Hand* const GetHand() const { return &m_hand; }
 
 		void SetPot(Money new_value);
 		const Money& GetPot() const { return m_pot; }

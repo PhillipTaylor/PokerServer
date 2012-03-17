@@ -7,12 +7,11 @@
 
 #include <string>
 #include "GamePlayer.h"
+#include "../poker_utils/Logger.h"
 
+using namespace PokerUtils::Logger;
 using std::string;
 using std::ostream;
-
-#include <iostream>
-using std::cout; using std::endl;
 
 namespace GameEngineCore {
 
@@ -86,7 +85,7 @@ void GamePlayer::SetTotalBalance(Money new_value) {
 void GamePlayer::CardDealt(const Card& new_card) {
 	m_hand.AddCard(new_card);
 	m_player_impl->CardDealt(m_hand, new_card);
-	cout << "HAND COUNT: " << m_hand.GetCardCount() << endl;
+	log_debug << GetName() << " Card State: " << m_hand << " (" << m_hand.GetHandTextualDescription() << ")\n";
 }
 
 bool GamePlayer::IsAllIn() {

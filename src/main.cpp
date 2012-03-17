@@ -8,14 +8,16 @@
 #include <iostream>
 #include <ctime>
 #include <exception>
-#include "Card.h"
-#include "Deck.h"
-#include "Hand.h"
-#include "../comms/RandomBotPlayer.h"
-#include "GameEngine.h"
+#include "core/Card.h"
+#include "core/Deck.h"
+#include "core/Hand.h"
+#include "comms/RandomBotPlayer.h"
+#include "core/GameEngine.h"
+#include "poker_utils/Logger.h"
 
 using namespace std;
 using namespace GameEngineCore;
+using namespace PokerUtils::Logger;
 using ConcretePlayers::RandomBotPlayer;
 
 void init();
@@ -26,8 +28,6 @@ void hand_detection_testing();
 void game_engine_testing();
 
 int main(int argc, char** argv) {
-
-	cout << "Hello World!" << endl;
 
 	init();
 	//card_testing();
@@ -48,7 +48,10 @@ int main(int argc, char** argv) {
 
 /* This function is critical for RNG */
 void init() {
+	LoggingInit(DEBUG);
+	log_info << "Logging Initialised!\n";
 	srand(time(nullptr));
+	log_info << "RNG Initialised\n";
 }
 
 void card_testing() {

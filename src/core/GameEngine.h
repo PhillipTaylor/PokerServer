@@ -19,6 +19,7 @@
 #include "Money.h"
 #include "GamePlayer.h"
 #include "AbstractPlayer.h"
+#include "../poker_utils/Logger.h"
 
 namespace GameEngineCore {
 
@@ -47,6 +48,7 @@ class GameEngine {
 		void AssignDealer();
 		void TakeSmallBlinds();
 		void TakeBigBlinds();
+		Money CurrentMinimumBid();
 		void DealOutBothPlayerCards();
 		void DealOutSingleRoundOfCards();
 		void RoundOfBetting();

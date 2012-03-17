@@ -18,6 +18,7 @@ const unsigned int MAX_CARDS_IN_HAND = 7;
 
 //describes the hand.
 enum HandType {
+	HT_NO_HAND,
 	HT_HIGH_CARD,
 	HT_PAIR,
 	HT_TWO_PAIR,
@@ -29,12 +30,11 @@ enum HandType {
 	HT_STRAIGHT_FLUSH
 };
 
-typedef struct HandValue {
-	bool handFound;
-	int firstCardValue; //e.g. set to ACE is pair of Aces
-	int secondCardValue; //e.g set to 9 if full house, ACES and 9s.
-	int suitValue; //e.g. HEARTS in a flush
-} HandScore;
+typedef struct _HandValue {
+	HandType type;
+	const Card* primaryCard; //e.g. most influential card (e.g. Straight Ace High)
+	const Card* secondaryCard; //e.g second most influential card (e.g. Full House, Aces over Fours).
+} HandValue;
 
 class Hand {
 	public:
@@ -50,32 +50,32 @@ class Hand {
 		 * nothing.
 		*/
 
-		const HandType GetBestHandType() const { return m_best_hand_type; }
-		const HandScore& GetBestHandScore() const { return m_best_hand_score; }
+		const HandValue& GetBestHandValue() const { return m_best_hand; }
 		std::string GetHandTextualDescription() const;
 		std::string ToString() const;
 
 	private:
 		void CalculateHandScore();
+		const Card* GetCardPtr(int suit, int value) const;
+		const Card* GetCardPtrAnySuit(int value) const;
 
-        const HandScore GetStraightFlushScore() const;
-        const HandScore GetFourOfAKindScore() const;
-        const HandScore GetFullHouseScore() const;
-        const HandScore GetFlushScore() const;
-        const HandScore GetStraightScore() const;
-        const HandScore GetThreeOfAKindScore() const;
-        const HandScore GetTwoPairScore() const;
-        const HandScore GetPairScore() const;
-        const HandScore GetHighCardScore() const;
+        const HandValue GetStraightFlushValue() const;
+        const HandValue GetFourOfAKindValue() const;
+        const HandValue GetFullHouseValue() const;
+        const HandValue GetFlushValue() const;
+        const HandValue GetStraightValue() const;
+        const HandValue GetThreeOfAKindValue() const;
+        const HandValue GetTwoPairValue() const;
+        const HandValue GetPairValue() const;
+        const HandValue GetHighCardValue() const;
 
 		std::vector<Card> m_hand;
 
-		//describes the best hand detected.
-		HandType m_best_hand_type;
-		HandScore m_best_hand_score;
+		//best hand is calculated when cards added.
+		HandValue m_best_hand;
 };
 
-bool hand_compare(const Hand& hand1, const Hand& hand2);
+int hand_compare(const Hand* hand1, const Hand* hand2);
 std::ostream& operator<<(std::ostream& os, const Hand& hand);
 
 }

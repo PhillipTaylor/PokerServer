@@ -10,10 +10,9 @@
 #include <algorithm>
 #include <iostream>
 
-using std::endl;
-using std::cout;
-
 #include "GameEngine.h"
+
+using namespace PokerUtils::Logger;
 
 using std::vector;
 using std::reference_wrapper;
@@ -41,6 +40,8 @@ GameEngine::GameEngine(const vector<AbstractPlayer*>& players_impl) :
 {
 	players.reserve(players_impl.size());
 
+	log_info << "Game Engine Initialised (" << players_impl.size() << " players)\n";
+
 	for (auto iter : players_impl) {
 		GamePlayer gp(*iter);
 		players.push_back(gp);
@@ -67,33 +68,32 @@ void GameEngine::PlayGame() {
 
 	RoundOfBetting();
 
-	cout << "finished r 1" << endl;
 	if (PlayersRemaining() == 1) {
+		log_info << "Only one player remains\n";
 		SettleGame();
 		return;
 	}
 
 	DealFlop();
 
-	cout << "finished r 2" << endl;
 	RoundOfBetting();
 
 	if (PlayersRemaining() == 1) {
+		log_info << "Only one player remains\n";
 		SettleGame();
 		return;
 	}
 
 	DealTableCard(); //turn
-	cout << "finished r 3" << endl;
 
 	RoundOfBetting();
 
 	if (PlayersRemaining() == 1) {
+		log_info << "Only one player remains\n";
 		SettleGame();
 		return;
 	}
 
-	cout << "finished r 4" << endl;
 	DealTableCard(); //river
 
 	RoundOfBetting();
@@ -103,7 +103,7 @@ void GameEngine::PlayGame() {
 		return;
 	}
 
-	cout << "finished r 5" << endl;
+	log_info << "Time for a showdown!!";
 	CompareHands();
 	SettleGame();
 }
@@ -128,6 +128,7 @@ int GameEngine::NextPlayer(bool increment, bool loop) { //These values have defa
 	for (tmp = curr_player; tmp < players.size(); tmp++) {
 		if (players[tmp].IsPlaying())
 			return tmp;
+		log_debug << "....1: " << tmp << ", " << curr_player << "\n";
 	}
 
 	//got to end of list, start again at beginning
@@ -142,6 +143,7 @@ int GameEngine::NextPlayer(bool increment, bool loop) { //These values have defa
 	for (tmp = 0; tmp < end_claus; tmp++) {
 		if (players[tmp].IsPlaying())
 			return tmp;
+		log_debug << "....2\n";
 	}
 
 	return NO_NEXT_PLAYER;
@@ -153,6 +155,8 @@ void GameEngine::AssignDealer() {
 	dealer = NextPlayer(NO_INCR, NO_LOOP);
 
 	assert(dealer != NO_NEXT_PLAYER);
+
+	log_info << "Dealer: " << players[dealer].GetName() << "\n";
 
 	//Announce the dealer
 	for (GamePlayer& ply : players)
@@ -170,6 +174,10 @@ void GameEngine::TakeSmallBlinds() {
 	sb_balance -= small_blind;
 	players[curr_player].SetTotalBalance(sb_balance);
 	players[curr_player].SetPot(sb_balance);
+
+	log_info <<
+		"Taking small blinds (blinds: " << small_blind <<
+		", player: " << players[curr_player].GetName() << "\n";
 
 	for (GamePlayer& ply : players)
 		ply.SmallBlindAnnounce(players[curr_player].GetName(), small_blind);
@@ -190,6 +198,10 @@ void GameEngine::TakeBigBlinds() {
 	players[curr_player].SetTotalBalance(bb_balance);
 	players[curr_player].SetPot(bb_balance);
 
+	log_info <<
+		"Taking small blinds (blinds: " << small_blind <<
+		", player: " << players[curr_player].GetName() << "\n";
+
 	for (GamePlayer& ply : players)
 		ply.BigBlindAnnounce(players[curr_player].GetName(), big_blind);
 
@@ -207,6 +219,7 @@ void GameEngine::DealOutSingleRoundOfCards() {
 	curr_player = NextPlayer(INCR, LOOP); //will hit same player as small blind
 
 	game_deck.Burn();
+	log_info << "Card Burnt\n";
 
 	unsigned int first_player = curr_player;
 
@@ -219,8 +232,24 @@ void GameEngine::DealOutSingleRoundOfCards() {
 	} while (curr_player != first_player);
 }
 
+Money GameEngine::CurrentMinimumBid() {
+	Money max_equal = big_blind;
+
+	for (GamePlayer& ply : players) {
+		Money ply_pot = ply.GetPot();
+		if (ply_pot > max_equal)
+			max_equal = ply_pot;
+	}
+
+	return max_equal;
+}
+
 void GameEngine::RoundOfBetting() {
 
+	//track what people are required to be chipping in!
+	Money minimum_bid = CurrentMinimumBid();
+
+	log_info << "Starting round of betting (current min bid: " << minimum_bid << ")\n";
 	//start one next to the dealer
 	curr_player = dealer;
 	curr_player = NextPlayer(INCR, NO_LOOP);
@@ -229,8 +258,6 @@ void GameEngine::RoundOfBetting() {
 
 	unsigned int first_player = curr_player;
 
-	//track what people are required to be chipping in!
-	Money minimum_bid = big_blind;
 	bool entire_pass = false;
 
 	do {
@@ -239,6 +266,9 @@ void GameEngine::RoundOfBetting() {
 
 		if (gc.choice == RAISE)
 			minimum_bid = gc.value;
+
+		if (gc.choice == FOLD && PlayersRemaining() == 1)
+			break;
 
 		curr_player = NextPlayer(INCR, LOOP);
 
@@ -251,23 +281,25 @@ void GameEngine::RoundOfBetting() {
 
 void GameEngine::DealFlop() {
 
-	cout << "1" << endl;
+	log_info << "Dealing Flop\n";
 	DealTableCard(true);
-	cout << "2" << endl;
 	DealTableCard(false);
-	cout << "3" << endl;
 	DealTableCard(false);
 
 }
 
 void GameEngine::DealTableCard(bool burn) {
 
-	if (burn)
+	if (burn) {
 		game_deck.Burn();
+		log_info << "Burning Card\n";
+	}
 
 	Card card = game_deck.Top();
 
 	table_cards.push_back(card);
+
+	log_info << "Card Dealt: " << card << "\n";
 
 	//a copy of the table cards go into every players hands
 	//so a hand can contain the best five of all seven available
@@ -312,86 +344,82 @@ void GameEngine::CompareHands() {
 	//Ok...the moment of truth for our players...
 	//Show the cards to everyone!
 
-	curr_player = dealer;
-	curr_player = NextPlayer(INCR, LOOP);
 
-	unsigned int first_player = curr_player;
+	// First loop: get best hand possible
+	// Second loop: automatically fold anyone who doesn't have the same hand.
+	const Hand* best_hand = nullptr;
 
-	do {
+	for (GamePlayer& ply : players) {
+		if (ply.IsPlaying()) {
+			if (best_hand == nullptr) {
+				best_hand = ply.GetHand();
+			} else {
+				int retval = hand_compare(best_hand, ply.GetHand());
+
+				if (retval == 1)
+					best_hand = ply.GetHand();
+			}
+		}
 
 		for (GamePlayer& observer : players) {
-			observer.OpponentCardAnnounce(
-				players[curr_player].GetName(),
-				players[curr_player].GetHand()
-			);
+			Hand copy(*ply.GetHand());
+			observer.OpponentCardAnnounce(ply.GetName(), copy);
 		}
+	}
 
-		curr_player = NextPlayer(INCR, LOOP);
+	int winners = 0;
 
-	} while (curr_player != first_player);
+	for (GamePlayer& ply : players) {
 
-	//Get the Winner!
-	curr_player = dealer;
-	curr_player = NextPlayer(INCR, LOOP);
-	first_player = curr_player;
+		if (ply.IsPlaying()) {
 
-	//first player defaulted to "best" player.
-	unsigned int best_player = curr_player;
+			int retval = hand_compare(best_hand, ply.GetHand());
 
-	curr_player = NextPlayer(INCR, LOOP);
+			//assert(retval != 1);
+			if (retval == 1) {
+				log_debug << "best possible hand " << best_hand->ToString() << " beaten by " << ply.GetHand()->ToString() << "\n";
+			}
 
-	do {
-
-		if (hand_compare(
-			players[curr_player].GetHand(),
-			players[best_player].GetHand()
-		)) {
-			best_player = curr_player;
+			if (retval != 0) {
+				ply.Fold();
+			} else
+				winners++;
 		}
-
-		curr_player = NextPlayer(INCR, LOOP);
-
-	} while (curr_player != first_player);
-
-	//fold all losers automatically
-
-	curr_player = dealer;
-	curr_player = NextPlayer(INCR, LOOP);
-
-	do {
-
-		if (best_player != curr_player)
-			players[curr_player].Fold();
-
-		curr_player = NextPlayer(INCR, LOOP);
-
-	} while (curr_player != first_player);
+	}
 
 }
 
 void GameEngine::SettleGame() {
 
-	//Only one player left! Give them the spoils!
+	//Pay the winners
 
 	Money total_collected = 0;
-
-	GamePlayer* winner;
+	int winners = 0;
 
 	for (GamePlayer& ply : players) {
-		total_collected = ply.GetPot();
+		total_collected += ply.GetPot();
 		ply.SetPot(0);
 
 		if (ply.IsPlaying())
-			winner = &ply;
+			++winners;
 	}
 
-	//give the victor the spoils!
-	Money total_winner_balance = winner->GetTotalBalance();
-	total_winner_balance += total_collected;
-	winner->SetTotalBalance(total_winner_balance);
+	Money winnings = (Money)((float)total_collected / winners);
+	log_info << "sharing winnings of " << winnings << " between " << winners << " winners\n";
 
-	for (GamePlayer& ply : players)
-		ply.WinnerAnnounce(winner->GetName(), total_collected);
+	//give the victors the spoils!
+	for (GamePlayer& ply : players) {
+		if (ply.IsPlaying()) {
+
+			Money balance = ply.GetTotalBalance();
+			balance += winnings;
+			ply.SetTotalBalance(balance);
+
+			for (GamePlayer& observer : players)
+				observer.WinnerAnnounce(ply.GetName(), winnings);
+		}
+	}
+
 }
 
 Money GameEngine::GetTotalPot() {
