@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 	//card_testing();
 	//deck_testing();
 	//hand_testing();
-	//hand_detection_testing();
+	hand_detection_testing();
 	try {
 		game_engine_testing();
 	} catch (exception& err) {

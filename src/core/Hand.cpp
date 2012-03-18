@@ -170,14 +170,13 @@ const Card& Hand::operator[](int position) const {
 const HandValue Hand::GetStraightFlushValue() const {
 
 
-	int offset = LOWEST_CARD_VALUE - 1; //leaves space for lowest card to be 1 (low ace)
-
-	int suitNestedValues[NUM_SUITS][(HIGHEST_CARD_VALUE - offset) + 1];
+	//Element 0 will be 0. Values keep their real equivalents
+	int suitNestedValues[NUM_SUITS][HIGHEST_CARD_VALUE+1];
 
 	//intialise map
-	for (int suit = CLUBS; suit <= SPADES; suit++) {
-		for (int val = 0; val <= (HIGHEST_CARD_VALUE - offset); val++)
-			suitNestedValues[suit][val - offset] = 0;
+	for (int suit = 0; suit < NUM_SUITS; suit++) {
+		for (int val = 0; val < (HIGHEST_CARD_VALUE + 1); val++)
+			suitNestedValues[suit][val] = 0;
 	}
 
 	//count instances
@@ -187,10 +186,10 @@ const HandValue Hand::GetStraightFlushValue() const {
 		int c_val = card.GetValue();
 
 		if (card.GetValue() == ACE) {  //Ace is HIGH or LOW
-			suitNestedValues[c_suit][0]++;
-			suitNestedValues[c_suit][c_val - offset]++;
+			suitNestedValues[c_suit][1]++;
+			suitNestedValues[c_suit][c_val]++;
 		} else
-			suitNestedValues[c_suit][c_val - offset]++;
+			suitNestedValues[c_suit][c_val]++;
 
 	}
 
@@ -201,8 +200,8 @@ const HandValue Hand::GetStraightFlushValue() const {
 	//now looks for 5 in a row, per suit, in suit order + card order.
 	//This loop may be reversible so we can break out early.
 
-	for (int suit = CLUBS; suit <= SPADES; suit++) {
-		for (int val = 0; val <= (HIGHEST_CARD_VALUE - offset); val++) {
+	for (int suit = 0; suit < NUM_SUITS; suit++) {
+		for (int val = 1; val < (HIGHEST_CARD_VALUE + 1); val++) { //ignore bucket 0
 
 			if (suitNestedValues[suit][val] == 0) {
 				seq = 0;
@@ -295,50 +294,42 @@ const HandValue Hand::GetFullHouseValue() const {
 
 const HandValue Hand::GetFlushValue() const {
 
-	map<int, vector<const Card*> > occur = {
-		{ DIAMONDS, vector<const Card*>() }, // reverse order of importance
-		{ CLUBS, vector<const Card*>() },
-		{ SPADES, vector<const Card*>() },
-		{ HEARTS, vector<const Card*>() }
+	map<int, int > occur = {
+		{ CLUBS, 0 },
+		{ DIAMONDS, 0},
+		{ HEARTS, 0},
+		{ SPADES, 0}
 	};
 
-	for (const Card& card : m_hand) {
-		occur[card.GetSuit()].push_back(&card);
-	}
+	//count cards by suit
+	for (const Card& card : m_hand)
+		occur[card.GetSuit()]++;
 
-	const Card* match = nullptr;
+	const Card* best_card = nullptr;
 
-	for (pair<int, vector<const Card*> > suit_cards : occur) {
-		sort(suit_cards.second.begin(), suit_cards.second.end());
+	for (int suit = 0; suit < NUM_SUITS; suit++) {
+		//flush found!
+		if (occur[suit] >= 5) {
+			//find highest card of that suit
+			for (const Card& card : m_hand) {
+				if (card.GetSuit() == suit) {
+					if (best_card == nullptr || best_card->GetValue() < card.GetValue())
+						best_card = &card;
+				}
+			}
 
-		//Is there an uninterrupted sequence of 5 cards?
-		const Card* prev = nullptr;
-		int count = 0;
+			assert(best_card != nullptr);
 
-		for (const Card* scard : suit_cards.second) {
-			if (prev == nullptr) {
-				prev = scard;
-				count++;
-			} else if (prev->GetValue() + 1 == scard->GetValue()) {
-				count++;
-				if (count == 5)
-					match = scard;
-			} else
-				count = 0;
+			HandValue retval;
+			retval.type = HT_FLUSH;
+			retval.primaryCard = best_card;
+			retval.secondaryCard = nullptr;
+			return retval;
 
-			prev = scard;
 		}
-
 	}
 
-	if (match != nullptr) {
-		HandValue retval;
-		retval.type = HT_FULL_HOUSE;
-		retval.primaryCard = match;
-		retval.secondaryCard = nullptr;
-		return retval;
-	} else
-		return HANDVALUE_NO_HAND;
+	return HANDVALUE_NO_HAND;
 
 }
 
