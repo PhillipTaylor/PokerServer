@@ -367,6 +367,7 @@ const HandValue Hand::GetStraightValue() const {
 		HandValue retval;
 		retval.type = HT_STRAIGHT;
 		retval.primaryCard = GetCardPtrAnySuit(highestSoFar);
+		retval.secondaryCard = nullptr;
 		return retval;
 	} else
 		return HANDVALUE_NO_HAND;
@@ -444,6 +445,7 @@ const HandValue Hand::GetPairValue() const {
 			HandValue retval;
 			retval.type = HT_PAIR;
 			retval.primaryCard = GetCardPtrAnySuit(iter->first);
+			retval.secondaryCard = nullptr;
 			return retval;
 		}
 	}
@@ -466,6 +468,7 @@ const HandValue Hand::GetHighCardValue() const {
 	HandValue retval;
 	retval.type = HT_HIGH_CARD;
 	retval.primaryCard = best_card;
+	retval.secondaryCard = nullptr;
 	return retval;
 }
 
