@@ -5,5 +5,29 @@ Demonstrates the following:
 	- The ability to write a non-trivial C++ application.
 	- Good Object Orientated design skills
 	- Use of Classes, Enums, Structs, Abstract Base Classes
-	- Use of STL libraries and functions such as std::random_shuffle
-	- Use of C++11 features (range based for-loop, initialiser lists)
+	- Use of appropriate STL data structures and functions such as std::random_shuffle
+	- Use of C++11 features (range based for-loop, initialiser lists, nullptr, auto)
+	- Use of nontrivial syntax (dispatch function pointer table)
+	- Appropriate use of const, references, pointers and namespaces
+	- Does not leak memory.
+	- Use of value type like objects (Logger)
+	- Contains unit testing code
+
+Output from valgrind on last run:
+
+[23:57: (master) Debug$] valgrind ./PokerServer --verbose
+==5683== Memcheck, a memory error detector
+==5683== Copyright (C) 2002-2011, and GNU GPL'd, by Julian Seward et al.
+==5683== Using Valgrind-3.7.0 and LibVEX; rerun with -h for copyright info
+==5683== Command: ./PokerServer --verbose
+==5683== 
+(program output)
+==5683== 
+==5683== HEAP SUMMARY:
+==5683==     in use at exit: 0 bytes in 0 blocks
+==5683==   total heap usage: 12,979 allocs, 12,979 frees, 908,869 bytes allocated
+==5683== 
+==5683== All heap blocks were freed -- no leaks are possible
+==5683== 
+==5683== For counts of detected and suppressed errors, rerun with: -v
+==5683== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 4 from 4)
