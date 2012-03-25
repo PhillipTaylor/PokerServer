@@ -18,7 +18,7 @@ using namespace::std;
 namespace ConcretePlayers {
 
 ConsolePlayer::ConsolePlayer() :
-	m_total_balance(0)
+	m_total_balance(MONEY_ZERO)
 {
 
 	//Ask the user for their name!

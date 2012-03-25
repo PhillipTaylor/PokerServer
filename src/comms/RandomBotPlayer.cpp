@@ -16,7 +16,7 @@ using std::stringstream;
 static int bot_index = 0;
 
 RandomBotPlayer::RandomBotPlayer() :
-	m_total_balance(0)
+	m_total_balance(MONEY_ZERO)
 {
 	++bot_index;
 	m_name = "Bot #" + PokerUtils::AutoToString(bot_index);
@@ -53,7 +53,7 @@ void RandomBotPlayer::CardDealt(const Hand& hand, const Card& new_card) {}
 
 GameChoice RandomBotPlayer::MakeChoice(Money minimum_bid) {
 
-	int blind_decision = rand() % 3;
+	int blind_decision = rand() % 4;
 
 	GameChoice gc;
 
@@ -62,14 +62,15 @@ GameChoice RandomBotPlayer::MakeChoice(Money minimum_bid) {
 			gc.choice = FOLD;
 			return gc;
 		case (1):
+		case (2):
 			gc.choice = CALL;
 			return gc;
 		default:
-			if (m_total_balance > minimum_bid)
+			if (m_total_balance < minimum_bid)
 				gc.choice = FOLD;
 			else {
 				gc.choice = RAISE;
-				gc.value = 1;
+				gc.value = minimum_bid + 1;
 			}
 			return gc;
 	}

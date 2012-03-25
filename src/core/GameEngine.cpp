@@ -15,20 +15,11 @@
 using namespace PokerUtils::Logger;
 
 using std::vector;
-using std::reference_wrapper;
 using std::string;
 using std::ostream;
 using std::random_shuffle;
-using std::for_each;
 
 namespace GameEngineCore {
-
-//to make bool values to NextPlayer more readable
-const bool INCR = true;
-const bool NO_INCR = false;
-
-const bool LOOP = true;
-const bool NO_LOOP = false;
 
 GameEngine::GameEngine(const vector<AbstractPlayer*>& players_impl) :
 	players(),
@@ -36,21 +27,24 @@ GameEngine::GameEngine(const vector<AbstractPlayer*>& players_impl) :
 	game_deck(),
 	small_blind(2),
 	big_blind(4),
-	dealer(0)
+	dealer(0),
+	rounds_played(0)
 {
 	players.reserve(players_impl.size());
 
 	log_info << "Game Engine Initialised (" << players_impl.size() << " players)\n";
 
 	for (auto iter : players_impl) {
-		GamePlayer gp(*iter);
-		players.push_back(gp);
+		if (iter->GetTotalBalance() > MONEY_ZERO) {
+			GamePlayer gp(*iter);
+			players.push_back(gp);
+			log_debug << "Player accepted into game: "
+				<< gp.GetName() << " with money " << gp.GetTotalBalance() << "\n";
+		}
 	}
 
 	assert(players.size() >= 2); //at least two players
 
-	//shuffle the players positions for extra randomness
-	//random_shuffle(players.begin(), players.end()); this is wrong thing to do.
 }
 
 string GameEngine::ToString() const {
@@ -61,12 +55,11 @@ void GameEngine::PlayGame() {
 
 	AssignDealer();
 
-	TakeSmallBlinds();
-	TakeBigBlinds();
-
 	DealOutBothPlayerCards();
+	LogInternals();
 
-	RoundOfBetting();
+	RoundOfBetting(true);
+	LogInternals();
 
 	if (PlayersRemaining() == 1) {
 		log_info << "Only one player remains\n";
@@ -74,9 +67,8 @@ void GameEngine::PlayGame() {
 		return;
 	}
 
-	DealFlop();
-
 	RoundOfBetting();
+	LogInternals();
 
 	if (PlayersRemaining() == 1) {
 		log_info << "Only one player remains\n";
@@ -87,6 +79,7 @@ void GameEngine::PlayGame() {
 	DealTableCard(); //turn
 
 	RoundOfBetting();
+	LogInternals();
 
 	if (PlayersRemaining() == 1) {
 		log_info << "Only one player remains\n";
@@ -97,113 +90,76 @@ void GameEngine::PlayGame() {
 	DealTableCard(); //river
 
 	RoundOfBetting();
+	LogInternals();
 
 	if (PlayersRemaining() == 1) {
 		SettleGame();
 		return;
 	}
 
-	log_info << "Time for a showdown!!";
+	log_info << "Time for a showdown!!\n";
 	CompareHands();
+	LogInternals();
 	SettleGame();
 }
 
-/*
- * This works, but you need to understand how, and when it's
- * used so it doesn't "bite" you. Weird edges around looping
- * semantics make it difficult for me to think of a better
- * algorithm off the top of my head.
-*/
+bool GameEngine::NextPlayer(unsigned int first_player) {
+	unsigned int old_curr = curr_player;
 
-int GameEngine::NextPlayer(bool increment, bool loop) { //These values have defaults defined.
+	NextPlayer();
+	assert(old_curr != curr_player);
 
-	if (increment) {
-		++curr_player;
-		if (curr_player == players.size())
-			curr_player = 0;
-	}
+	if (curr_player > old_curr && first_player > old_curr && first_player <= curr_player)
+		return true;
+	else if (curr_player < old_curr) {
+		//loop wrap around occurred.
+		if (first_player >= 0 && first_player <= curr_player)
+			return true;
+		else if (first_player >= old_curr)
+			return true;
+		else
+			return false;
+	} else
+		return false;
+}
+
+void GameEngine::NextPlayer() { //These values have defaults defined.
+
+	++curr_player;
+	if (curr_player == players.size())
+		curr_player = 0;
 
 	unsigned int tmp;
 
 	for (tmp = curr_player; tmp < players.size(); tmp++) {
-		if (players[tmp].IsPlaying())
-			return tmp;
-		log_debug << "....1: " << tmp << ", " << curr_player << "\n";
+
+		if (players[tmp].IsPlaying()) {
+			curr_player = tmp;
+			return;
+		}
 	}
 
 	//got to end of list, start again at beginning
 
-	unsigned int end_claus;
+	for (tmp = 0; tmp < players.size(); tmp++) {
 
-	if (loop)
-		end_claus = players.size();
-	else
-		end_claus = curr_player;
-
-	for (tmp = 0; tmp < end_claus; tmp++) {
-		if (players[tmp].IsPlaying())
-			return tmp;
-		log_debug << "....2\n";
+		if (players[tmp].IsPlaying()) {
+			curr_player = tmp;
+			return;
+		}
 	}
 
-	return NO_NEXT_PLAYER;
 }
 
 void GameEngine::AssignDealer() {
 
-	curr_player = 0;
-	dealer = NextPlayer(NO_INCR, NO_LOOP);
-
-	assert(dealer != NO_NEXT_PLAYER);
+	dealer = 0;
 
 	log_info << "Dealer: " << players[dealer].GetName() << "\n";
 
 	//Announce the dealer
 	for (GamePlayer& ply : players)
 		ply.DealerAnnounce(players[dealer].GetName());
-
-}
-
-void GameEngine::TakeSmallBlinds() {
-
-	curr_player = dealer;
-	curr_player = NextPlayer(INCR, LOOP);
-	assert(dealer != NO_NEXT_PLAYER);
-
-	Money sb_balance = players[curr_player].GetTotalBalance();
-	sb_balance -= small_blind;
-	players[curr_player].SetTotalBalance(sb_balance);
-	players[curr_player].SetPot(sb_balance);
-
-	log_info <<
-		"Taking small blinds (blinds: " << small_blind <<
-		", player: " << players[curr_player].GetName() << "\n";
-
-	for (GamePlayer& ply : players)
-		ply.SmallBlindAnnounce(players[curr_player].GetName(), small_blind);
-
-}
-
-void GameEngine::TakeBigBlinds() {
-
-	// Two left of the dealer is absolute big blind.
-	// Don't rely on curr_player iterator / function invocation
-	// sequence to get the correct player here. Only the dealer is accurate.
-	curr_player = dealer;
-	curr_player = NextPlayer(INCR, LOOP);
-	curr_player = NextPlayer(INCR, LOOP);
-
-	Money bb_balance = players[curr_player].GetTotalBalance();
-	bb_balance -= big_blind;
-	players[curr_player].SetTotalBalance(bb_balance);
-	players[curr_player].SetPot(bb_balance);
-
-	log_info <<
-		"Taking small blinds (blinds: " << small_blind <<
-		", player: " << players[curr_player].GetName() << "\n";
-
-	for (GamePlayer& ply : players)
-		ply.BigBlindAnnounce(players[curr_player].GetName(), big_blind);
 
 }
 
@@ -216,7 +172,7 @@ void GameEngine::DealOutSingleRoundOfCards() {
 
 	//Start to the player next to the dealer
 	curr_player = dealer;
-	curr_player = NextPlayer(INCR, LOOP); //will hit same player as small blind
+	NextPlayer();
 
 	game_deck.Burn();
 	log_info << "Card Burnt\n";
@@ -228,7 +184,7 @@ void GameEngine::DealOutSingleRoundOfCards() {
 		const Card card = game_deck.Top();
 		players[curr_player].CardDealt(card);
 
-		curr_player = NextPlayer(INCR, LOOP);
+		NextPlayer();
 	} while (curr_player != first_player);
 }
 
@@ -241,24 +197,35 @@ Money GameEngine::CurrentMinimumBid() {
 			max_equal = ply_pot;
 	}
 
+	log_debug << "minimum bid at beginning of round: " << max_equal << "\n";
 	return max_equal;
 }
 
-void GameEngine::RoundOfBetting() {
+void GameEngine::RoundOfBetting(bool take_blinds) {
+
+	++rounds_played;
+
+	log_info << "Starting round of betting\n";
+	//start one next to the dealer
+	curr_player = dealer;
+	NextPlayer();
+
+	unsigned int first_player = curr_player;
+
+	if (take_blinds) {
+		players[curr_player].PayPot(small_blind);
+		NextPlayer();
+		players[curr_player].PayPot(big_blind);
+		curr_player = first_player; //let them have their goes.
+	}
 
 	//track what people are required to be chipping in!
 	Money minimum_bid = CurrentMinimumBid();
 
-	log_info << "Starting round of betting (current min bid: " << minimum_bid << ")\n";
-	//start one next to the dealer
-	curr_player = dealer;
-	curr_player = NextPlayer(INCR, NO_LOOP);
-
 	assert(curr_player != NO_NEXT_PLAYER);
 
-	unsigned int first_player = curr_player;
-
-	bool entire_pass = false;
+	bool entire_pass = false; //every player has had a chance to bet
+	bool exit_loop;
 
 	do {
 
@@ -270,12 +237,14 @@ void GameEngine::RoundOfBetting() {
 		if (gc.choice == FOLD && PlayersRemaining() == 1)
 			break;
 
-		curr_player = NextPlayer(INCR, LOOP);
+		entire_pass = NextPlayer(first_player);
 
-		if (curr_player == first_player)
-			entire_pass = true;
+		log_debug << "NEXT TURN SELECTED: " << players[curr_player].GetName() << " (min bid: " << minimum_bid << ")\n";
+		log_debug << "FIRST PASS: " << entire_pass << ", All Pots Even?: " << AllPotsEven() << "\n";
 
-	} while (!entire_pass && !AllPotsEven());
+		exit_loop = (entire_pass && AllPotsEven());
+
+	} while (!exit_loop);
 
 }
 
@@ -314,11 +283,11 @@ bool GameEngine::AllPotsEven() {
 	Money val;
 
 	for (GamePlayer& ply : players) {
-		if (ply.IsPlaying() && !ply.IsAllIn()) {
+		if (ply.IsPlaying()) {
 			if (first) {
 				val = ply.GetPot();
 				first = false;
-			} else if (ply.GetPot() != val)
+			} else if (ply.GetPot() != val && !ply.IsAllIn())
 				return false;
 		}
 	}
@@ -393,12 +362,12 @@ void GameEngine::SettleGame() {
 
 	//Pay the winners
 
-	Money total_collected = 0;
+	Money total_collected = MONEY_ZERO;
 	int winners = 0;
 
 	for (GamePlayer& ply : players) {
 		total_collected += ply.GetPot();
-		ply.SetPot(0);
+		ply.SetPot(MONEY_ZERO);
 
 		if (ply.IsPlaying())
 			++winners;
@@ -422,9 +391,36 @@ void GameEngine::SettleGame() {
 
 }
 
+
+void GameEngine::LogInternals() {
+#ifdef BUILD_DEBUG
+
+	log_debug << "******* ROUND: " << rounds_played << "*****\n";
+	log_debug << "Small Blind: " << small_blind;
+	log_debug << ", Big Blind" << big_blind << "\n";
+
+	for (GamePlayer& ply : players) {
+		log_debug << "Player: " << ply.GetName();
+		log_debug << ",POT:" << ply.GetPot();
+		log_debug << ",BALANCE: " << ply.GetTotalBalance();
+
+		if (ply.IsPlaying()) {
+			log_debug << ",HAND: " << ply.GetHand()->ToString() << " - " << ply.GetHand()->GetHandTextualDescription();
+		} else {
+			log_debug << " --- Folded ---";
+		}
+
+		log_debug << "\n";
+	}
+
+	log_debug << "************\n";
+
+#endif
+}
+
 Money GameEngine::GetTotalPot() {
 
-	Money sum = 0;
+	Money sum = MONEY_ZERO;
 
 	for (GamePlayer& ply : players)
 		sum += ply.GetPot();

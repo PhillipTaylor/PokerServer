@@ -39,19 +39,17 @@ class GameEngine {
 		Money big_blind;
 		unsigned int dealer;
 		unsigned int curr_player;
+		int rounds_played;
 
-		//Beaware of behaviour. If curr_player == 0 and active, returns 0!
-		//You must atleast increment the value once yourself.
-		int NextPlayer(bool increment = true, bool loop = false);
+		void NextPlayer();
+		bool NextPlayer(unsigned int first_player); //given first_player returns if it was passed.
 		Money GetTotalPot();
 
 		void AssignDealer();
-		void TakeSmallBlinds();
-		void TakeBigBlinds();
 		Money CurrentMinimumBid();
 		void DealOutBothPlayerCards();
 		void DealOutSingleRoundOfCards();
-		void RoundOfBetting();
+		void RoundOfBetting(bool take_blinds = false);
 		void DealFlop();
 		void DealTableCard(bool burn = true); //for twist and river
 		bool AllPotsEven(); //spin round of betting until all pots even or players are out.
@@ -61,7 +59,7 @@ class GameEngine {
 		//Settle Game scores remaining players hands, assigns winnings and tells
 		//everyone who won.
 		void SettleGame(); //no support for split pots yet.
-
+		void LogInternals();
 };
 
 std::ostream& operator<<(std::ostream& os, const GameEngine& ge);

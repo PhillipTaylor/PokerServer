@@ -18,7 +18,7 @@ namespace GameEngineCore {
 GamePlayer::GamePlayer(AbstractPlayer& player_impl) :
 	m_player_impl(&player_impl),
 	m_hand(),
-	m_pot(0),
+	m_pot(MONEY_ZERO),
 	m_folded(false)
 {}
 
@@ -89,7 +89,7 @@ void GamePlayer::CardDealt(const Card& new_card) {
 }
 
 bool GamePlayer::IsAllIn() {
-	return (IsPlaying() && m_player_impl->GetTotalBalance() == 0);
+	return (IsPlaying() && m_player_impl->GetTotalBalance() == MONEY_ZERO);
 }
 
 void GamePlayer::Fold() {
@@ -98,40 +98,51 @@ void GamePlayer::Fold() {
 
 Money GamePlayer::PayPot(Money value) {
 
-	Money total_pot = m_player_impl->GetTotalBalance();
+	Money total_balance = m_player_impl->GetTotalBalance();
 	Money placed;
 
-	if (total_pot < value) { // USER DOES NOT HAVE THE CASH!
-		                     // TODO: Add support for split pots
-		placed = total_pot;
-		total_pot = 0;
+	if (total_balance < value) { // User does not have
+		placed = total_balance;
+		total_balance = MONEY_ZERO;
 	} else {
 		placed = value;
-		total_pot -= value;
+		total_balance -= value;
 	}
 
 	m_pot += value;
-	m_player_impl->SetTotalBalance(total_pot);
+	m_player_impl->SetTotalBalance(total_balance);
 
 	return placed;
 }
 
 GameChoice GamePlayer::MakeChoice(Money minimum_bid) {
 
+	string player_name = m_player_impl->GetName();
+
+	if (m_player_impl->GetTotalBalance() == MONEY_ZERO) {
+		GameChoice gc;
+		gc.choice = CALL;
+		log_info << "TURN: " << player_name << ": called (auto from all in)\n";
+		return gc;
+	}
+
 	GameChoice gc = m_player_impl->MakeChoice(minimum_bid);
 
-	if (gc.choice == FOLD)
+	if (gc.choice == FOLD) {
 		m_folded = true;
-	else if (gc.choice == CALL ) {
+		log_info << "TURN: " << player_name << ": folded\n";
+	} else if (gc.choice == CALL ) {
 		//need to top up the pot with the difference.
 		Money diff = (minimum_bid - m_pot);
 		PayPot(diff);
+		log_info << "TURN: " << player_name << ": called at " << minimum_bid << "\n";
 	} else if (gc.choice == RAISE ) {
 
 		assert(gc.value > minimum_bid);
 
 		Money diff = (gc.value - m_pot);
 		PayPot(diff);
+		log_info << "TURN: " << player_name << ": raised to " << gc.value << "\n";
 	}
 
 	return gc;

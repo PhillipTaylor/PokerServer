@@ -14,6 +14,8 @@ namespace GameEngineCore {
 	//later if need be...
 	typedef double Money;
 
+	const double MONEY_ZERO = 0.0f;
+
 }
 
 #endif /* MONEY_H_ */
