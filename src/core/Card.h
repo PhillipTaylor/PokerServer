@@ -1,8 +1,7 @@
 /*
  * Card.h
  *
- *  Created on: 8 Jan 2012
- *      Author: phill
+ * Represents a Card.
  */
 
 #ifndef CARD_H_

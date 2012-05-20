@@ -1,8 +1,6 @@
 /*
  * main.cpp
  *
- *  Created on: 8 Jan 2012
- *      Author: phill
  */
 
 #include <iostream>

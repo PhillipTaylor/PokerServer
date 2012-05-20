@@ -1,8 +1,9 @@
 /*
  * Deck.h
  *
- *  Created on: 8 Jan 2012
- *      Author: phill
+ * Represents a Deck of Cards. Cards are created by the deck during construction
+ * are kept for the lifetime of the deck. Calling Top() or Burn() returns or burns a
+ * card respectively by moving a pointer over a vector.
  */
 
 #ifndef DECK_H_

@@ -1,8 +1,9 @@
 /*
  * Logger.h
  *
- *  Created on: 19 Feb 2012
- *      Author: phill
+ * Provides the logging interface to the system. It's currently a simple
+ * wrapper for STDOUT but it gives me the flexibility to write to a file
+ * or database later should I wish to.
  */
 
 #ifndef LOGGER_H_

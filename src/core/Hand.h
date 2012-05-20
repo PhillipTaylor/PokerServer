@@ -1,8 +1,13 @@
 /*
  * Hand.h
  *
- *  Created on: 8 Jan 2012
- *      Author: phill
+ * Represents a Hand. A hand can be anywhere between 2 and 7 cards.
+ * Every player is assigned a hand with the first two cards in the
+ * hand being the players personal dealt cards. The remaining 5 cards
+ * are the flop, turn and river, being added as they are dealt. Since
+ * the hand contains both the players hand and the table cards, this
+ * class contains the functions for working out which hands beat others
+ * and what textual description of a players hand is. (e.g. Straight Flush etc).
  */
 
 #ifndef HAND_H_

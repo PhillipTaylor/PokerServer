@@ -2,8 +2,17 @@
  * GamePlayer.h
  *
  *
- *  Created on: 22 Jan 2012
- *      Author: phill
+ * The GamePlayer class is an adapter between the GameEngine and the
+ * Abstract Player class. It simplifies the interface for an AbstractPlayer
+ * but provides the GameEngine with the functions it needs to do its job
+ * more simply.
+ *
+ * The GamePlayer provides a full model for interactions that you may see
+ * performed on a Player in the domain model sense, with AbstractPlayer being
+ * used to simplify communications with the actual players over different mechanisms.
+ *
+ * This class handles the communications between the GameEngine and the AbstractPlayers
+ * subclasses and provides other functions that don't need to be exposed to the AbstractPlayer.
  */
 
 #ifndef GAMEPLAYER_H_
@@ -18,8 +27,6 @@
 #include "Money.h"
 #include "AbstractPlayer.h"
 
-//Todo. double not great for currency
-//because of rounding.
 namespace GameEngineCore {
 
 class GamePlayer {

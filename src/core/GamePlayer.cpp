@@ -1,13 +1,11 @@
 /*
  * GamePlayer.cpp
  *
- *  Created on: 22 Jan 2012
- *      Author: phill
  */
 
 #include <string>
 #include "GamePlayer.h"
-#include "../poker_utils/Logger.h"
+#include "poker_utils/Logger.h"
 
 using namespace PokerUtils::Logger;
 using std::string;

@@ -1,8 +1,6 @@
 /*
  * ConsolePlayer.cpp
  *
- *  Created on: 22 Jan 2012
- *      Author: phill
  */
 
 #include "ConsolePlayer.h"
@@ -10,8 +8,8 @@
 #include <iostream>
 #include <string>
 
-#include "../core/Card.h"
-#include "../core/Hand.h"
+#include "core/Card.h"
+#include "core/Hand.h"
 
 using namespace::std;
 

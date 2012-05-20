@@ -1,8 +1,6 @@
 /*
  * Logger.cpp
  *
- *  Created on: 19 Feb 2012
- *      Author: phill
  */
 
 #include "Logger.h"

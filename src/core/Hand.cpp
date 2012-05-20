@@ -1,8 +1,6 @@
 /*
  * Hand.cpp
  *
- *  Created on: 8 Jan 2012
- *      Author: phill
  */
 
 #include <assert.h>
@@ -11,7 +9,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <algorithm>
-#include "../poker_utils/Logger.h"
+#include "poker_utils/Logger.h"
 
 #include "Hand.h"
 #include "Card.h"

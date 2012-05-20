@@ -1,6 +1,6 @@
 
 #include "assert.h"
-#include "../core/Card.h" 
+#include "core/Card.h"
 
 using namespace GameEngineCore;
 

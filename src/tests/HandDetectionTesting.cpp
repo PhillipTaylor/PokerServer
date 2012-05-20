@@ -5,9 +5,9 @@
  *      Author: phill
  */
 
-#include "../core/Card.h"
-#include "../core/Deck.h"
-#include "../core/Hand.h"
+#include "core/Card.h"
+#include "core/Deck.h"
+#include "core/Hand.h"
 #include <iostream>
 
 using namespace GameEngineCore;

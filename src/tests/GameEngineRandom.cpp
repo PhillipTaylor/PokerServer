@@ -5,14 +5,15 @@
  *      Author: phill
  */
 
-#include "../core/Card.h"
-#include "../core/Deck.h"
-#include "../core/Hand.h"
-#include "../core/AbstractPlayer.h"
-#include "../comms/RandomBotPlayer.h"
-#include "../core/GameEngine.h"
 #include <vector>
 #include <iostream>
+
+#include "core/Card.h"
+#include "core/Deck.h"
+#include "core/Hand.h"
+#include "core/AbstractPlayer.h"
+#include "comms/interfaces/RandomBotPlayer.h"
+#include "core/GameEngine.h"
 
 using namespace GameEngineCore;
 using namespace ConcretePlayers;

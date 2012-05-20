@@ -8,10 +8,11 @@
 #ifndef DECKTESTING_CPP_
 #define DECKTESTING_CPP_
 
-#include "../core/Card.h"
-#include "../core/Deck.h"
-#include "../core/Hand.h"
 #include <iostream>
+
+#include "core/Card.h"
+#include "core/Deck.h"
+#include "core/Hand.h"
 
 using namespace GameEngineCore;
 using std::cout;

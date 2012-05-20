@@ -1,8 +1,10 @@
 /*
  * GameEngine.h
  *
- *  Created on: 22 Jan 2012
- *      Author: phill
+ * GameEngine basically captures most of the business logic for a game of Poker.
+ * A game is instantiated with a set of players, who are dealt cards, asked to bet call or
+ * raise and generally participate in a game. The function PlayGame doesn't yield until the
+ * end of a game.
  */
 
 #ifndef GAMEENGINE_H_
@@ -19,7 +21,7 @@
 #include "Money.h"
 #include "GamePlayer.h"
 #include "AbstractPlayer.h"
-#include "../poker_utils/Logger.h"
+#include "poker_utils/Logger.h"
 
 namespace GameEngineCore {
 

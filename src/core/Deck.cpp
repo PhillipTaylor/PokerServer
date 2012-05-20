@@ -1,14 +1,12 @@
 /*
  * Deck.cpp
  *
- *  Created on: 8 Jan 2012
- *      Author: phill
  */
 
 #include <assert.h>
 #include <algorithm>
 #include "Deck.h"
-#include "../poker_utils/CommonFunctions.h"
+#include "poker_utils/CommonFunctions.h"
 
 using namespace std;
 

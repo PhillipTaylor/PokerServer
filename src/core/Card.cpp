@@ -1,14 +1,12 @@
 /*
  * Card.cpp
  *
- *  Created on: 8 Jan 2012
- *      Author: phill
  */
 
 #include "Card.h"
 
 #include <assert.h>
-#include "../poker_utils/CommonFunctions.h"
+#include "poker_utils/CommonFunctions.h"
 
 using namespace std;
 

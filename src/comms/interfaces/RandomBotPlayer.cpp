@@ -1,12 +1,9 @@
 /*
  * RandomBotPlayer.cpp
- *
- *  Created on: 18 Feb 2012
- *      Author: phill
  */
 
 #include "RandomBotPlayer.h"
-#include "../poker_utils/CommonFunctions.h"
+#include "poker_utils/CommonFunctions.h"
 
 namespace ConcretePlayers {
 

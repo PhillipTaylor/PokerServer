@@ -1,15 +1,20 @@
 /*
  * RandomBotPlayer.h
  *
- *  Created on: 18 Feb 2012
- *      Author: phill
+ * RandomBotPlayer is a concrete player, able to take actions in a game
+ * of poker as if it were a real player. RandomBot player ignores the
+ * cards dealt to it, and chooses what to do based (bet,call,fold) on the results of calling
+ * rand() making it totally random. The primary purpose of this class is that it's used
+ * during the test suite to allow the developer to replay logic is a wide number of scenarios
+ * quickly. The randomness of this class may very when I wanted to simulate longer games but
+ * the output is generally unpredictable.
  */
 
 #ifndef RANDOMBOTPLAYER_H_
 #define RANDOMBOTPLAYER_H_
 
-#include "../core/AbstractPlayer.h"
-#include "../core/Money.h"
+#include "core/AbstractPlayer.h"
+#include "core/Money.h"
 
 using namespace GameEngineCore;
 

@@ -1,25 +1,25 @@
 /*
- * ConsolePlayer.h
+ * CallBot.h
  *
- *  Created on: 22 Jan 2012
- *      Author: phill
+ * CallBot is a fake Poker player that blindly calls any bet it's faced with
+ * causing it to go into a showdown at the end of a game of Poker if it has
+ * enough money. This concrete player implementation is primary used in the test suite
+ * for simulating games in a predictable manor.
  */
 
-#ifndef CONSOLEPLAYER_H_
-#define CONSOLEPLAYER_H_
+#ifndef CALLBOTPLAYER_H_
+#define CALLBOTPLAYER_H_
 
-#include <string>
-#include "../core/AbstractPlayer.h"
-#include "../core/Money.h"
+#include "core/AbstractPlayer.h"
+#include "core/Money.h"
 
 using namespace GameEngineCore;
 
 namespace ConcretePlayers {
 
-class ConsolePlayer: public AbstractPlayer {
-
+class CallBotPlayer: public GameEngineCore::AbstractPlayer {
 	public:
-		ConsolePlayer();
+		CallBotPlayer();
 
 		bool IsPlaying();
 		std::string GetName();
@@ -37,13 +37,12 @@ class ConsolePlayer: public AbstractPlayer {
 		void CardDealt(const Hand& hand, const Card& new_card);
 		GameChoice MakeChoice(Money minimum_bid);
 
-		~ConsolePlayer() {}
+		~CallBotPlayer() {}
 
 	private:
 		Money m_total_balance;
 		std::string m_name;
-
 };
 
 } /* namespace ConcretePlayers */
-#endif /* CONSOLEPLAYER_H_ */
+#endif /* CALLBOTPLAYER_H_ */

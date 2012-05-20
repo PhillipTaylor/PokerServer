@@ -1,8 +1,7 @@
 /*
  * CommonFunctions.h
  *
- *  Created on: 18 Feb 2012
- *      Author: phill
+ * This is intended to be a dumping ground for utility functions.
  */
 
 #ifndef COMMONFUNCTIONS_H_
