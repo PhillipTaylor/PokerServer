@@ -34,17 +34,16 @@ string Card::ToShortString() const {
 
 	string retval;
 
-	if (m_value < 11) {
+	if (m_value < 11)
 		retval = CardValueToString(m_value);
-	} else if (m_value == JACK) {
+	else if (m_value == JACK)
 		retval = "J";
-	} else if (m_value == QUEEN) {
+	else if (m_value == QUEEN)
 		retval = "Q";
-	} else if (m_value == KING) {
+	else if (m_value == KING)
 		retval = "K";
-	} else if (m_value == ACE) {
+	else if (m_value == ACE)
 		retval = "A";
-	}
 
 	switch (m_suit) {
 		case (HEARTS):
