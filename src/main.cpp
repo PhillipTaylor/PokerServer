@@ -8,6 +8,7 @@
 #include <exception>
 #include "poker_utils/Logger.h"
 #include "tests/PokerTests.h"
+#include "comms/engines/telnet/TelnetServer.h"
 
 using namespace std;
 using namespace PokerUtils::Logger;
@@ -19,8 +20,11 @@ int main(int argc, char** argv) {
 
 	init();
 
-	PokerTests pt;
-	pt.RunTests();
+	poker_telnet::TelnetServer ts;
+	ts.InitialiseService(); //function does not return.
+
+	//PokerTests pt;
+	//pt.RunTests();
 
 	log_info << "Game Engine Returned\n";
 	return 0;
