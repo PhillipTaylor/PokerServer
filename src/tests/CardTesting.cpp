@@ -4,7 +4,7 @@
 
 using namespace GameEngineCore;
 
-namespace poker_tests {
+namespace PokerTests {
 
 void card_testing() {
 

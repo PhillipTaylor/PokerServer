@@ -8,7 +8,7 @@
 #ifndef DECKTESTING_H_
 #define DECKTESTING_H_
 
-namespace poker_tests {
+namespace PokerTests {
 	void deck_testing();
 }
 

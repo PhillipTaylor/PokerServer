@@ -18,7 +18,7 @@ using std::endl;
 #include "HandDetectionTesting.h"
 #include "GameEngineRandom.h"
 
-namespace poker_tests {
+namespace PokerTests {
 
 PokerTests::PokerTests() {}
 
@@ -45,4 +45,4 @@ void PokerTests::RunTests() {
 	cout << "Perform Random GameEngine Complete" << endl;
 }
 
-} /* namespace poker_tests */
+} /* namespace PokerTests */

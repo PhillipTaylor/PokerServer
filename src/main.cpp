@@ -12,7 +12,7 @@
 
 using namespace std;
 using namespace PokerUtils::Logger;
-using namespace poker_tests;
+using namespace PokerTests;
 
 void init();
 
@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 
 	init();
 
-	poker_telnet::TelnetServer ts;
+	NetworkEngines::Telnet::TelnetServer ts;
 	ts.InitialiseService(); //function does not return.
 
 	//PokerTests pt;

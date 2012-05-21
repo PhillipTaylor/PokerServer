@@ -8,7 +8,7 @@
 #ifndef POKERTESTS_H_
 #define POKERTESTS_H_
 
-namespace poker_tests {
+namespace PokerTests {
 
 class PokerTests {
 public:
@@ -16,5 +16,5 @@ public:
 	void RunTests();
 };
 
-} /* namespace poker_tests */
+} /* namespace PokerTests */
 #endif /* POKERTESTS_H_ */

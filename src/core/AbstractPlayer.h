@@ -8,7 +8,7 @@
  * "RandomBotPlayer" which makes random choices "TelnetPlayer", "ConsolePlayer" etc.
  *
  * Some player related state is kept in GamePlayer that represents a full game player and holds
- * a reference to an AbstractPlayer which purely tries to seperate game interaction from communications
+ * a reference to an AbstractPlayer which purely tries to separate game interaction from communications
  * concerns.
  */
 

@@ -8,7 +8,7 @@
 #ifndef GAMEENGINERANDOM_H_
 #define GAMEENGINERANDOM_H_
 
-namespace poker_tests {
+namespace PokerTests {
 	void game_engine_random_testing();
 }
 

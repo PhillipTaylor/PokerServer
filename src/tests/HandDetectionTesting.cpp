@@ -15,7 +15,7 @@ using std::cout;
 using std::endl;
 using std::string;
 
-namespace poker_tests {
+namespace PokerTests {
 
 void hand_detection_testing() {
 	Card c_one_and_nothing = Card(3, CLUBS);

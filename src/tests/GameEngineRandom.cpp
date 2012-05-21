@@ -22,7 +22,7 @@ using std::endl;
 using std::string;
 using std::vector;
 
-namespace poker_tests {
+namespace PokerTests {
 
 void game_engine_random_testing() {
 

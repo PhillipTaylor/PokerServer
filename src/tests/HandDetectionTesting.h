@@ -8,7 +8,7 @@
 #ifndef HANDDETECTIONTESTING_H_
 #define HANDDETECTIONTESTING_H_
 
-namespace poker_tests {
+namespace PokerTests {
 	void hand_detection_testing();
 }
 
