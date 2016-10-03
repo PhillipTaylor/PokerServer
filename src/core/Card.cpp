@@ -4,9 +4,9 @@
  */
 
 #include "Card.h"
+#include "CommonFunctions.h"
 
 #include <assert.h>
-#include "poker_utils/CommonFunctions.h"
 
 using namespace std;
 

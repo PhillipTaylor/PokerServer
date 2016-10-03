@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <algorithm>
 #include "Deck.h"
-#include "poker_utils/CommonFunctions.h"
+#include "CommonFunctions.h"
 
 using namespace std;
 
